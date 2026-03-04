@@ -1,0 +1,14 @@
+{
+  "name": "BetSmart IA",
+  "short_name": "BetSmart",
+  "description": "Análise inteligente de apostas esportivas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06090f",
+  "theme_color": "#00e676",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "https://via.placeholder.com/192x192/00e676/000000?text=BS", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://via.placeholder.com/512x512/00e676/000000?text=BS", "sizes": "512x512", "type": "image/png" }
+  ]
+}

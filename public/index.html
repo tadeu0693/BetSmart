@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BetSmart IA">
+<meta name="theme-color" content="#06090f">
+<link rel="manifest" href="/manifest.json">
+<title>BetSmart IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06090f;--surface:#0d1320;--surface2:#121a28;--border:#1a2640;--border2:#243350;--text:#e8f0fe;--muted:#4a6080;--muted2:#7090b0;--green:#00e676;--greendk:#00c853;--glw:rgba(0,230,118,0.15);--yellow:#ffb300;--red:#ff3d5a;--blue:#448aff;--purple:#7c4dff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans','Segoe UI',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{display:none}
+input::placeholder{color:var(--muted)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+
+.app{max-width:480px;margin:0 auto;min-height:100vh;position:relative}
+.header{padding:18px 18px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);background:rgba(6,9,15,.93)}
+.logo{font-size:1.6rem;font-weight:800;letter-spacing:1px;line-height:1}
+.logo .green{color:var(--green);text-shadow:0 0 20px var(--glw)}
+.logo .badge{margin-left:6px;background:linear-gradient(135deg,var(--green),var(--greendk));color:#000;font-size:.48rem;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:66px;z-index:40}
+.tab{flex:1;padding:10px 4px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:.7rem;font-weight:700;font-family:inherit;cursor:pointer;text-transform:uppercase;letter-spacing:.8px;transition:all .2s}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+.content{padding:16px 14px 110px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;transition:all .2s}
+.card.clickable{cursor:pointer}
+.card.clickable:hover,.card.clickable:active{background:var(--surface2);border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.card.loading{border-color:rgba(0,230,118,.3)}
+
+/* Info block */
+.info-block{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:13px 15px}
+.info-label{font-size:.6rem;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.info-label::before{content:'';width:3px;height:11px;border-radius:2px;display:inline-block;flex-shrink:0}
+.info-label.green::before{background:var(--green)}
+.info-label.blue::before{background:var(--blue)}
+.info-label.purple::before{background:var(--purple)}
+.info-label.yellow::before{background:var(--yellow)}
+.info-text{font-size:.83rem;color:#9ab8d8;line-height:1.65}
+
+/* Tip card */
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;transition:border-color .2s}
+.tip-card:hover{border-color:rgba(0,230,118,.4)}
+.tip-market{font-size:.58rem;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.tip-bet{font-size:.97rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3}
+.tip-reason{font-size:.73rem;color:var(--muted2);line-height:1.5;margin-bottom:8px}
+.tip-footer{display:flex;align-items:center;justify-content:space-between}
+.stars{color:var(--yellow);font-size:.82rem;letter-spacing:1px}
+.risk{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.8px}
+.risk.low{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25)}
+.risk.mid{background:rgba(255,179,0,.1);color:var(--yellow);border:1px solid rgba(255,179,0,.25)}
+.risk.high{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.25)}
+
+/* Badges */
+.badge{font-size:.62rem;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.8px}
+.badge.conf-high{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.3)}
+.badge.conf-mid{background:rgba(255,179,0,.1);color:var(--yellow);border:1px solid rgba(255,179,0,.3)}
+.badge.conf-low{background:rgba(255,61,90,.1);color:var(--red);border:1px solid rgba(255,61,90,.3)}
+.badge.live{background:rgba(255,61,90,.15);color:var(--red);border:1px solid rgba(255,61,90,.3)}
+.badge.done{background:var(--border);color:var(--muted)}
+.badge.real{background:rgba(68,138,255,.12);color:var(--blue);border:1px solid rgba(68,138,255,.3)}
+
+/* Buttons */
+.btn{border:none;border-radius:10px;font-family:inherit;cursor:pointer;font-weight:800;transition:all .2s}
+.btn.primary{background:linear-gradient(135deg,var(--green),var(--greendk));color:#000}
+.btn.primary:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed}
+.btn.primary:not(:disabled):active{transform:scale(.97)}
+.btn.outline{background:none;border:1px solid var(--border);color:var(--muted2)}
+.btn-analyze{background:linear-gradient(135deg,var(--green),var(--greendk));color:#000;border:none;border-radius:10px;padding:8px 13px;font-size:.7rem;font-weight:800;white-space:nowrap;flex-shrink:0;font-family:inherit;cursor:pointer;transition:all .2s}
+
+/* Spinner */
+.spinner{border-radius:50%;animation:spin .7s linear infinite}
+.spinner.sm{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--green)}
+.spinner.md{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--green)}
+
+/* Inputs */
+.input{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 15px;color:var(--text);font-size:.92rem;outline:none;font-family:inherit;width:100%;transition:border-color .2s}
+.input:focus{border-color:var(--green)}
+
+/* Error */
+.error{background:rgba(255,61,90,.1);border:1px solid rgba(255,61,90,.3);border-radius:12px;padding:12px 16px;color:var(--red);font-size:.85rem}
+.warn{background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.25);border-radius:12px;padding:12px 16px;font-size:.8rem;color:var(--muted2)}
+
+/* Skeleton */
+.skeleton{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;animation:shimmer 1.5s infinite}
+.skel-line{background:var(--border);border-radius:6px;margin-bottom:10px}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.liga-pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:12px}
+.liga-pill{flex-shrink:0;padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted2);font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s}
+.liga-pill.active{border-color:var(--green);background:var(--glw);color:var(--green)}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(6,9,15,.95);border-top:1px solid var(--border);display:flex;backdrop-filter:blur(16px);z-index:100}
+.nav-btn{flex:1;padding:10px 4px 14px;background:none;border:none;color:var(--muted);font-size:.6rem;font-weight:700;font-family:inherit;cursor:pointer;text-transform:uppercase;letter-spacing:.8px;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s}
+.nav-btn.active{color:var(--green)}
+.nav-icon{font-size:1.2rem}
+.disclaimer{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:452px;background:rgba(255,61,90,.07);border:1px solid rgba(255,61,90,.15);border-radius:10px;padding:7px 14px;font-size:.66rem;color:var(--muted);text-align:center;z-index:90}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+.fade-up{animation:fadeUp .3s ease both}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="logo"><span class="green">Bet</span>Smart<span class="badge">IA</span></div>
+        <div style="font-size:.62rem;color:var(--muted2);margin-top:2px" id="dateLabel"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="realBadge" style="display:none" class="badge real">📡 DADOS REAIS</div>
+        <div style="text-align:right">
+          <div style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Próximos</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--green);line-height:1" id="nextCount">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('config')" id="tab-config">⚙️ Config</button>
+    <button class="tab" onclick="showTab('jogos')" id="tab-jogos">⚽ Jogos</button>
+    <button class="tab" onclick="showTab('analise')" id="tab-analise">📊 <span id="analysisDot"></span></button>
+    <button class="tab" onclick="showTab('busca')" id="tab-busca">🔍 Buscar</button>
+  </div>
+
+  <div class="content">
+
+    <!-- CONFIG -->
+    <div id="pane-config" class="fade-up">
+      <div class="card" style="margin-bottom:16px;padding:20px">
+        <div class="info-label green" style="margin-bottom:14px">API-Football — Dados Reais</div>
+        <div style="background:rgba(68,138,255,.08);border:1px solid rgba(68,138,255,.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;color:var(--muted2);line-height:1.7">
+          📡 <strong style="color:var(--text)">Com a chave configurada o app vai:</strong><br>
+          ✅ Buscar jogos reais do dia<br>
+          ✅ Escalação oficial dos times<br>
+          ✅ Lesionados e suspensos reais<br>
+          ✅ Forma recente (últimos 5 jogos)<br>
+          ✅ Histórico H2H real<br>
+          ✅ IA analisa com todos esses dados!
+        </div>
+        <div style="font-size:.75rem;color:var(--muted2);line-height:1.8;margin-bottom:14px">
+          1️⃣ Acesse <strong style="color:var(--green)">rapidapi.com/api-sports/api/api-football</strong><br>
+          2️⃣ Clique em <strong style="color:var(--text)">Subscribe → Basic (Free)</strong><br>
+          3️⃣ Em "Endpoints" copie sua <strong style="color:var(--text)">X-RapidAPI-Key</strong><br>
+          4️⃣ Cole abaixo e clique em Conectar
+        </div>
+        <input class="input" id="rapidApiKey" type="password" placeholder="Cole sua X-RapidAPI-Key aqui..." style="margin-bottom:10px">
+        <button class="btn primary" id="btnConnect" onclick="conectar()" style="width:100%;padding:12px;font-size:.9rem">✅ Conectar e Buscar Jogos</button>
+        <div id="erroConfig" style="display:none;margin-top:10px" class="error"></div>
+      </div>
+      <div id="successConfig" style="display:none;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.4rem">✅</span>
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--green)" id="successMsg">Conectado!</div>
+          <div style="font-size:.7rem;color:var(--muted2)">Dados reais ativos — vá para aba Jogos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOGOS -->
+    <div id="pane-jogos" style="display:none" class="fade-up">
+      <div id="jogosWarn" class="warn" style="margin-bottom:16px;cursor:pointer" onclick="showTab('config')">
+        <strong style="color:var(--yellow)">⚙️ Configure a API primeiro</strong><br>
+        <span style="font-size:.72rem">Toque para ir às configurações →</span>
+      </div>
+      <div id="skeletons" style="display:none;flex-direction:column;gap:10px">
+        <div class="skeleton"><div class="skel-line" style="height:10px;width:40%"></div><div class="skel-line" style="height:16px;width:80%"></div><div class="skel-line" style="height:10px;width:25%"></div></div>
+        <div class="skeleton"><div class="skel-line" style="height:10px;width:35%"></div><div class="skel-line" style="height:16px;width:75%"></div><div class="skel-line" style="height:10px;width:30%"></div></div>
+        <div class="skeleton"><div class="skel-line" style="height:10px;width:45%"></div><div class="skel-line" style="height:16px;width:70%"></div><div class="skel-line" style="height:10px;width:20%"></div></div>
+      </div>
+      <div id="ligaPills" class="liga-pills" style="display:none"></div>
+      <div id="jogosMeta" style="display:none;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:.68rem;color:var(--muted2);font-weight:600" id="jogosMetaText"></div>
+        <button class="btn outline" id="btnEncerrados" onclick="toggleEncerrados()" style="padding:3px 11px;font-size:.63rem;border-radius:20px">Ver encerrados</button>
+      </div>
+      <div id="jogosList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="jogosEmpty" style="display:none" class="empty">
+        <div class="empty-icon">🕐</div>
+        <div>Todos os jogos já começaram.<br><span style="color:var(--muted2);cursor:pointer" onclick="toggleEncerrados()">Ver encerrados</span></div>
+      </div>
+    </div>
+
+    <!-- ANÁLISE -->
+    <div id="pane-analise" style="display:none" class="fade-up">
+      <div id="analiseLoading" style="display:none;text-align:center;padding:50px 20px">
+        <div class="spinner md" style="margin:0 auto 14px"></div>
+        <div style="color:var(--muted2);font-size:.85rem;animation:pulse 1.5s infinite" id="analiseStep">Analisando...</div>
+        <div style="font-size:.7rem;color:var(--muted);background:rgba(68,138,255,.08);border:1px solid rgba(68,138,255,.2);border-radius:10px;padding:6px 14px;display:inline-block;margin-top:8px">📡 Buscando dados reais</div>
+      </div>
+      <div id="analiseError" style="display:none" class="error" style="margin-bottom:14px"></div>
+      <div id="analiseResult"></div>
+      <div id="analiseEmpty" class="empty">
+        <div class="empty-icon">📊</div>
+        <div>Nenhuma análise ainda.<br>Vá para <strong style="color:var(--green)">Jogos</strong> e toque em Analisar!</div>
+      </div>
+    </div>
+
+    <!-- BUSCA -->
+    <div id="pane-busca" style="display:none" class="fade-up">
+      <div class="warn" style="margin-bottom:14px">⚠️ Busca manual não usa dados reais. Para análise completa use a aba <strong style="color:var(--green)">Jogos</strong>.</div>
+      <div style="font-size:.68rem;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Buscar qualquer partida</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input class="input" id="buscaInput" placeholder="Ex: Barcelona vs Atlético - La Liga..." onkeydown="if(event.key==='Enter')buscaManual()">
+        <button class="btn primary" id="btnBusca" onclick="buscaManual()" style="padding:12px 18px;font-size:.9rem;flex-shrink:0">⚡</button>
+      </div>
+      <div id="buscaLoading" style="display:none;text-align:center;padding:40px 20px">
+        <div class="spinner md" style="margin:0 auto 12px"></div>
+        <div style="color:var(--muted2);font-size:.83rem;animation:pulse 1.5s infinite" id="buscaStep">Analisando...</div>
+      </div>
+      <div id="buscaError" style="display:none;margin-top:12px" class="error"></div>
+      <div id="buscaResult" style="margin-top:16px"></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('config')" id="nav-config"><span class="nav-icon">⚙️</span>Config</button>
+    <button class="nav-btn" onclick="showTab('jogos')" id="nav-jogos"><span class="nav-icon">⚽</span>Jogos</button>
+    <button class="nav-btn" onclick="showTab('analise')" id="nav-analise"><span class="nav-icon">📊</span>Análise</button>
+    <button class="nav-btn" onclick="showTab('busca')" id="nav-busca"><span class="nav-icon">🔍</span>Buscar</button>
+  </div>
+
+  <div class="disclaimer"><span style="color:var(--red);font-weight:700">⚠️</span> App informativo. Apostas envolvem risco. Jogue com responsabilidade.</div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const TABS = ['config','jogos','analise','busca'];
+const LIGAS_IDS = {71:"br1",475:"paul",476:"cario",477:"mineiro",478:"gaucho",73:"copa",13:"lib",11:"sula",39:"pl",140:"liga",135:"serie",78:"bl",61:"l1",2:"ucl"};
+const LIGAS_LABELS = {br1:"Brasileirão",paul:"Paulistão",cario:"Carioca",mineiro:"Mineiro",gaucho:"Gaúcho",copa:"Copa BR",lib:"Libertadores",sula:"Sul-Americana",pl:"Premier",liga:"La Liga",serie:"Serie A",bl:"Bundesliga",l1:"Ligue 1",ucl:"Champions"};
+const SYSTEM_PROMPT = `Voce e especialista em apostas esportivas. Analise a partida com base nos DADOS REAIS fornecidos e responda EXATAMENTE neste formato de tags. Nao use JSON nem markdown.
+[MATCH]Times[/MATCH]
+[LEAGUE]Liga[/LEAGUE]
+[CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]
+[FORM_HOME]Analise a forma real do time da casa em 2-3 frases com dados concretos.[/FORM_HOME]
+[FORM_AWAY]Analise a forma real do visitante em 2-3 frases com dados concretos.[/FORM_AWAY]
+[SQUAD_HOME]Comente escalacao e lesionados reais do time da casa em 2 frases.[/SQUAD_HOME]
+[SQUAD_AWAY]Comente escalacao e lesionados reais do visitante em 2 frases.[/SQUAD_AWAY]
+[H2H]Analise o historico real de confrontos em 2 frases.[/H2H]
+[CONTEXT]Contexto e importancia da partida em 2 frases.[/CONTEXT]
+[TIPS]
+- Resultado Final | Time vence | Razao baseada nos dados reais | **** | Baixo
+- Ambos Marcam | Sim ou Nao | Razao | *** | Medio
+- Total de Gols | Mais de 2.5 | Razao | *** | Medio
+- Total de Gols | Menos de 2.5 | Razao | ** | Medio
+- Escanteios | Mais de 9.5 | Razao | ** | Medio
+- Cartoes | Mais de 3.5 | Razao | ** | Alto
+- Placar Correto | Placar provavel | Razao | * | Alto
+- Marcador | Nome do jogador real | Razao | ** | Medio
+- Intervalo | Resultado provavel | Razao | ** | Alto
+- Dupla Chance | Opcao segura | Razao | **** | Baixo
+[/TIPS]
+Substitua pelos dados reais. Use * para estrelas. Mantenha pipe | como separador.`;
+
+let todosJogos = [];
+let mostrarEncerrados = false;
+let ligaAtiva = 'all';
+let analisandoId = null;
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function toMin(h){const[a,b]=h.split(':').map(Number);return a*60+b}
+function nowMin(){const n=new Date();return n.getHours()*60+n.getMinutes()}
+function getTag(text,tag){const re=new RegExp(`\\[${tag}\\]([\\s\\S]*?)\\[\\/${tag}\\]`,'i');const m=text.match(re);return m?m[1].trim():''}
+function parseTips(raw){const tips=[];(raw||'').split('\n').filter(l=>l.trim().startsWith('-')).forEach(l=>{const p=l.replace(/^-\s*/,'').split('|').map(s=>s.trim());if(p.length>=3){const r=(p[4]||'medio').toLowerCase();tips.push({market:p[0],bet:p[1],reason:p[2],stars:(p[3]||'***').replace(/[^*]/g,'').length||3,risk:r.includes('alto')?'high':r.includes('baixo')?'low':'mid'})}});return tips}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(t){
+  TABS.forEach(id=>{
+    document.getElementById('pane-'+id).style.display = id===t?'block':'none';
+    document.getElementById('tab-'+id).classList.toggle('active',id===t);
+    document.getElementById('nav-'+id).classList.toggle('active',id===t);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+setInterval(()=>renderJogos(),60000);
+
+// ── CONECTAR ──────────────────────────────────────────────────────────────────
+async function conectar(){
+  const key = document.getElementById('rapidApiKey').value.trim();
+  if(!key){showErro('erroConfig','Cole sua X-RapidAPI-Key!');return}
+  const btn = document.getElementById('btnConnect');
+  btn.disabled=true; btn.textContent='Buscando jogos...';
+  hideEl('erroConfig'); hideEl('successConfig');
+  document.getElementById('jogosWarn').style.display='none';
+  showEl('skeletons','flex');
+
+  const hoje = new Date().toISOString().split('T')[0];
+  try{
+    const data = await apiFoot(`fixtures?date=${hoje}&timezone=America%2FSao_Paulo`);
+    const ligasIds = Object.keys(LIGAS_IDS).map(Number);
+    todosJogos = (data.response||[])
+      .filter(f=>ligasIds.includes(f.league.id))
+      .map(f=>{
+        const horaUTC=new Date(f.fixture.date);
+        const horaBR=horaUTC.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+        return{id:f.fixture.id,liga:f.league.name,ligaId:LIGAS_IDS[f.league.id]||'all',ligaApiId:f.league.id,season:f.league.season,casa:f.teams.home.name,homeId:f.teams.home.id,fora:f.teams.away.name,awayId:f.teams.away.id,hora:horaBR,bandeira:getBandeira(f.league.id),status:f.fixture.status.short};
+      })
+      .sort((a,b)=>toMin(a.hora)-toMin(b.hora));
+
+    hideEl('skeletons');
+    showEl('successConfig');
+    document.getElementById('successMsg').textContent=`Conectado! ${todosJogos.length} jogos carregados`;
+    showEl('realBadge');
+    renderLigaPills();
+    renderJogos();
+    showTab('jogos');
+  }catch(e){
+    hideEl('skeletons');
+    showErro('erroConfig', e.message);
+  }finally{
+    btn.disabled=false; btn.textContent='✅ Conectar e Buscar Jogos';
+  }
+}
+
+function getBandeira(id){return{71:'🇧🇷',475:'🇧🇷',476:'🇧🇷',477:'🇧🇷',478:'🇧🇷',73:'🇧🇷',13:'🌎',11:'🌎',39:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',140:'🇪🇸',135:'🇮🇹',78:'🇩🇪',61:'🇫🇷',2:'🏆'}[id]||'🌍'}
+
+// ── RENDER LIGAS ──────────────────────────────────────────────────────────────
+function renderLigaPills(){
+  const ligasPresentes = [...new Set(todosJogos.map(j=>j.ligaId))];
+  const pills = document.getElementById('ligaPills');
+  pills.innerHTML = '';
+  showEl('ligaPills','flex');
+  [['all','Todos'],...ligasPresentes.map(id=>[id,LIGAS_LABELS[id]||id])].forEach(([id,label])=>{
+    const b=document.createElement('button');
+    b.className='liga-pill'+(ligaAtiva===id?' active':'');
+    b.textContent=label;
+    b.onclick=()=>{ligaAtiva=id;document.querySelectorAll('.liga-pill').forEach(p=>p.classList.remove('active'));b.classList.add('active');renderJogos()};
+    pills.appendChild(b);
+  });
+}
+
+// ── RENDER JOGOS ──────────────────────────────────────────────────────────────
+function renderJogos(){
+  const nm=nowMin();
+  const filtrados = ligaAtiva==='all'?todosJogos:todosJogos.filter(j=>j.ligaId===ligaAtiva);
+  const proximos = filtrados.filter(j=>toMin(j.hora)>nm-105);
+  const encerrados = filtrados.filter(j=>toMin(j.hora)<=nm-105);
+  const mostrar = mostrarEncerrados?filtrados:proximos;
+
+  document.getElementById('nextCount').textContent = todosJogos.filter(j=>toMin(j.hora)>nm-105).length;
+
+  if(encerrados.length>0){
+    showEl('jogosMeta');
+    document.getElementById('jogosMetaText').textContent=`${proximos.length} próximo(s) • ${encerrados.length} encerrado(s)`;
+    document.getElementById('btnEncerrados').textContent=mostrarEncerrados?'Ocultar':'Ver encerrados';
+  }else{hideEl('jogosMeta')}
+
+  const list=document.getElementById('jogosList');
+  list.innerHTML='';
+
+  if(mostrar.length===0){showEl('jogosEmpty');return}
+  hideEl('jogosEmpty');
+
+  mostrar.forEach((jogo,i)=>{
+    const emAndamento=toMin(jogo.hora)<=nm&&toMin(jogo.hora)>nm-105;
+    const encerrado=toMin(jogo.hora)<=nm-105;
+    const isLoading=analisandoId===jogo.id;
+    const div=document.createElement('div');
+    div.style.cssText=`animation:fadeUp .3s ease ${i*.04}s both`;
+    div.innerHTML=`
+      <div class="card${encerrado?'':' clickable'}${isLoading?' loading':''}" style="opacity:${encerrado?.45:1}" onclick="${isLoading||encerrado?'':''}" id="jcard-${jogo.id}">
+        ${isLoading?`
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="spinner sm"></div>
+            <div style="font-size:.75rem;color:var(--muted2);animation:pulse 1.5s infinite" id="jstep-${jogo.id}">Buscando dados reais...</div>
+          </div>
+        `:`
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.58rem;color:var(--muted2);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:6px">
+                ${jogo.bandeira} ${jogo.liga}
+                ${emAndamento?'<span class="badge live">● AO VIVO</span>':''}
+                ${encerrado?'<span class="badge done">ENCERRADO</span>':''}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                <span style="font-size:.93rem;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${jogo.casa}</span>
+                <span style="font-size:.6rem;font-weight:800;color:var(--muted);background:var(--bg);padding:2px 7px;border-radius:6px;border:1px solid var(--border);white-space:nowrap;flex-shrink:0">VS</span>
+                <span style="font-size:.93rem;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right">${jogo.fora}</span>
+              </div>
+              <div style="font-size:.68rem;color:${emAndamento?'var(--red)':'var(--muted2)'}">⏰ ${jogo.hora}</div>
+            </div>
+            ${!encerrado?`<button class="btn-analyze" onclick="analisarJogo(${jogo.id})">⚡ Analisar</button>`:''}
+          </div>
+        `}
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function toggleEncerrados(){mostrarEncerrados=!mostrarEncerrados;renderJogos()}
+
+// ── ANÁLISE COM DADOS REAIS ───────────────────────────────────────────────────
+async function analisarJogo(jogoId){
+  const jogo = todosJogos.find(j=>j.id===jogoId);
+  if(!jogo) return;
+  analisandoId=jogoId;
+  renderJogos();
+  showTab('analise');
+  showEl('analiseLoading');
+  hideEl('analiseError');
+  hideEl('analiseEmpty');
+  document.getElementById('analiseResult').innerHTML='';
+
+  const setStep=(s)=>{
+    const el=document.getElementById(`jstep-${jogoId}`);
+    if(el)el.textContent=s;
+    document.getElementById('analiseStep').textContent=s;
+  };
+
+  let contexto = `PARTIDA: ${jogo.casa} vs ${jogo.fora} — ${jogo.liga}\n\n`;
+
+  try{
+    // 1. Escalação
+    setStep('📋 Buscando escalações oficiais...');
+    try{
+      const lineups=await apiFoot(`fixtures/lineups?fixture=${jogoId}`);
+      if(lineups.response&&lineups.response.length>=2){
+        const ec=lineups.response[0],ef=lineups.response[1];
+        const tCasa=(ec.startXI||[]).map(p=>p.player?.name).filter(Boolean).join(', ');
+        const tFora=(ef.startXI||[]).map(p=>p.player?.name).filter(Boolean).join(', ');
+        contexto+=`ESCALACAO ${jogo.casa.toUpperCase()} (${ec.formation||'?'}): ${tCasa}\n`;
+        contexto+=`ESCALACAO ${jogo.fora.toUpperCase()} (${ef.formation||'?'}): ${tFora}\n\n`;
+      }else{contexto+=`ESCALACAO: Ainda nao divulgada\n\n`}
+    }catch(e){contexto+=`ESCALACAO: Indisponivel\n\n`}
+
+    // 2. Lesões
+    setStep('🏥 Verificando lesões e suspensões...');
+    try{
+      const inj=await apiFoot(`injuries?fixture=${jogoId}`);
+      if(inj.response&&inj.response.length>0){
+        const texto=inj.response.map(l=>`${l.player?.name}(${l.team?.name})-${l.player?.reason||'Lesao'}`).join(', ');
+        contexto+=`LESIONADOS/SUSPENSOS: ${texto}\n\n`;
+      }else{contexto+=`LESIONADOS/SUSPENSOS: Nenhum informado\n\n`}
+    }catch(e){contexto+=`LESIONADOS/SUSPENSOS: Indisponivel\n\n`}
+
+    // 3. Forma casa
+    setStep('📊 Carregando forma recente...');
+    try{
+      const fc=await apiFoot(`fixtures?team=${jogo.homeId}&last=5&status=FT`);
+      if(fc.response&&fc.response.length>0){
+        const forma=fc.response.map(f=>{
+          const isH=f.teams?.home?.id===jogo.homeId;
+          const adv=isH?f.teams.away.name:f.teams.home.name;
+          const gn=isH?f.goals?.home:f.goals?.away;
+          const ga=isH?f.goals?.away:f.goals?.home;
+          const r=gn>ga?'V':gn<ga?'D':'E';
+          return `${r}(${gn}-${ga} vs ${adv})`;
+        }).join(', ');
+        contexto+=`FORMA ${jogo.casa.toUpperCase()} (ultimos 5): ${forma}\n`;
+      }
+    }catch(e){}
+
+    // 4. Forma fora
+    try{
+      const ff=await apiFoot(`fixtures?team=${jogo.awayId}&last=5&status=FT`);
+      if(ff.response&&ff.response.length>0){
+        const forma=ff.response.map(f=>{
+          const isH=f.teams?.home?.id===jogo.awayId;
+          const adv=isH?f.teams.away.name:f.teams.home.name;
+          const gn=isH?f.goals?.home:f.goals?.away;
+          const ga=isH?f.goals?.away:f.goals?.home;
+          const r=gn>ga?'V':gn<ga?'D':'E';
+          return `${r}(${gn}-${ga} vs ${adv})`;
+        }).join(', ');
+        contexto+=`FORMA ${jogo.fora.toUpperCase()} (ultimos 5): ${forma}\n\n`;
+      }
+    }catch(e){}
+
+    // 5. H2H
+    setStep('⚔️ Buscando confrontos diretos...');
+    try{
+      const h2h=await apiFoot(`fixtures/headtohead?h2h=${jogo.homeId}-${jogo.awayId}&last=5`);
+      if(h2h.response&&h2h.response.length>0){
+        const texto=h2h.response.map(f=>{
+          const dt=new Date(f.fixture?.date).toLocaleDateString('pt-BR');
+          return `${dt}: ${f.teams?.home?.name} ${f.goals?.home}-${f.goals?.away} ${f.teams?.away?.name}`;
+        }).join(' | ');
+        contexto+=`H2H (ultimos 5): ${texto}\n\n`;
+      }
+    }catch(e){}
+
+    // 6. IA analisa
+    setStep('🤖 IA analisando com dados reais...');
+    const respIA=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:`Analise esta partida com os dados reais:\n\n${contexto}`,systemPrompt:SYSTEM_PROMPT})
+    });
+    const dataIA=await respIA.json();
+    if(dataIA.error)throw new Error(dataIA.error);
+    const raw=dataIA.text||'';
+    if(!raw.includes('[MATCH]'))throw new Error('Resposta inválida. Tente novamente.');
+    const analise=buildAnalise(raw,`${jogo.casa} vs ${jogo.fora}`,true);
+    renderAnalise(analise,'analiseResult');
+    document.getElementById('analysisDot').innerHTML='<span style="background:var(--green);color:#000;border-radius:10px;padding:1px 4px;font-size:.5rem;margin-left:2px;font-weight:900">✓</span>';
+
+  }catch(e){
+    showErro('analiseError','Erro: '+e.message);
+  }finally{
+    hideEl('analiseLoading');
+    analisandoId=null;
+    renderJogos();
+  }
+}
+
+// ── BUSCA MANUAL ──────────────────────────────────────────────────────────────
+async function buscaManual(){
+  const input=document.getElementById('buscaInput').value.trim();
+  if(!input){showErro('buscaError','Digite o nome do jogo.');return}
+  document.getElementById('btnBusca').disabled=true;
+  showEl('buscaLoading');
+  hideEl('buscaError');
+  document.getElementById('buscaResult').innerHTML='';
+  let mi=0;
+  const msgs=['🔍 Buscando...','🤖 Gerando análise...','✅ Finalizando...'];
+  const iv=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('buscaStep').textContent=msgs[mi]},1800);
+  try{
+    const resp=await fetch('/api/analyze',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:'Analise esta partida: '+input,systemPrompt:SYSTEM_PROMPT})
+    });
+    const data=await resp.json();
+    if(data.error)throw new Error(data.error);
+    const raw=data.text||'';
+    if(!raw.includes('[MATCH]'))throw new Error('Resposta inválida. Tente novamente.');
+    renderAnalise(buildAnalise(raw,input,false),'buscaResult');
+    document.getElementById('buscaInput').value='';
+  }catch(e){showErro('buscaError','Erro: '+e.message)}
+  finally{clearInterval(iv);hideEl('buscaLoading');document.getElementById('btnBusca').disabled=false}
+}
+
+// ── BUILD & RENDER ANÁLISE ────────────────────────────────────────────────────
+function buildAnalise(raw,fallback,real){
+  const confRaw=getTag(raw,'CONFIDENCE').toLowerCase();
+  return{
+    match:getTag(raw,'MATCH')||fallback,
+    league:getTag(raw,'LEAGUE'),
+    confidence:confRaw.includes('alta')?'high':confRaw.includes('baixa')?'low':'mid',
+    formHome:getTag(raw,'FORM_HOME'),formAway:getTag(raw,'FORM_AWAY'),
+    squadHome:getTag(raw,'SQUAD_HOME'),squadAway:getTag(raw,'SQUAD_AWAY'),
+    h2h:getTag(raw,'H2H'),context:getTag(raw,'CONTEXT'),
+    tips:parseTips(getTag(raw,'TIPS')),real
+  };
+}
+
+function renderAnalise(a,targetId){
+  const confLabel={high:'Alta Confiança',mid:'Média Confiança',low:'Baixa Confiança'}[a.confidence]||'Média Confiança';
+  const tipsHtml=a.tips.map(t=>{
+    const riskClass={low:'low',mid:'mid',high:'high'}[t.risk]||'mid';
+    const riskLabel={low:'Baixo',mid:'Médio',high:'Alto'}[t.risk]||'Médio';
+    const stars='★'.repeat(Math.min(t.stars,5))+'<span style="opacity:.2">'+'★'.repeat(Math.max(0,5-t.stars))+'</span>';
+    return`<div class="tip-card">
+      <div class="tip-market">${t.market}</div>
+      <div class="tip-bet">${t.bet}</div>
+      <div class="tip-reason">${t.reason}</div>
+      <div class="tip-footer"><span class="stars">${stars}</span><span class="risk ${riskClass}">${riskLabel}</span></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById(targetId).innerHTML=`
+    <div class="card" style="border-radius:18px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:0">
+      <div style="padding:18px 20px;background:linear-gradient(135deg,var(--surface2),var(--surface));border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+              <span style="font-size:.62rem;color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:1.2px">⚽ ${a.league}</span>
+              ${a.real?'<span class="badge real">📡 DADOS REAIS</span>':''}
+            </div>
+            <div style="font-size:1.4rem;font-weight:800;line-height:1.2">${a.match}</div>
+          </div>
+          <span class="badge conf-${a.confidence}">${confLabel}</span>
+        </div>
+      </div>
+      <div style="padding:16px 16px 0">
+        <div class="grid-2">
+          <div class="info-block"><div class="info-label green">Forma — Casa</div><div class="info-text">${a.formHome||'—'}</div></div>
+          <div class="info-block"><div class="info-label green">Forma — Visitante</div><div class="info-text">${a.formAway||'—'}</div></div>
+          <div class="info-block"><div class="info-label blue">Elenco — Casa</div><div class="info-text">${a.squadHome||'—'}</div></div>
+          <div class="info-block"><div class="info-label blue">Elenco — Visitante</div><div class="info-text">${a.squadAway||'—'}</div></div>
+        </div>
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="info-block"><div class="info-label purple">H2H</div><div class="info-text">${a.h2h||'—'}</div></div>
+          <div class="info-block"><div class="info-label purple">Contexto</div><div class="info-text">${a.context||'—'}</div></div>
+        </div>
+      </div>
+      <div style="padding:0 16px 20px">
+        <div class="info-label yellow" style="margin-bottom:12px">Dicas de Apostas (${a.tips.length})</div>
+        <div class="tips-grid">${tipsHtml}</div>
+      </div>
+    </div>`;
+}
+
+// ── API FOOTBALL VIA PROXY ────────────────────────────────────────────────────
+async function apiFoot(endpoint){
+  const [path,qs]=endpoint.split('?');
+  const params=new URLSearchParams(qs||'');
+  params.set('endpoint',path);
+  const resp=await fetch('/api/football?'+params.toString());
+  if(!resp.ok)throw new Error('Erro API: '+resp.status);
+  return resp.json();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function showEl(id,display='block'){document.getElementById(id).style.display=display}
+function hideEl(id){document.getElementById(id).style.display='none'}
+function showErro(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block'}
+</script>
+</body>
+</html>
