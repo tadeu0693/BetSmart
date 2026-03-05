@@ -1,8 +1,0 @@
-{
-  "version": 2,
-  "rewrites": [
-    { "source": "/api/football", "destination": "/api/football" },
-    { "source": "/api/analyze",  "destination": "/api/analyze"  },
-    { "source": "/(.*)",         "destination": "/public/index.html" }
-  ]
-}
