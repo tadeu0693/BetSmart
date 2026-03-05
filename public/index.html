@@ -247,7 +247,7 @@ input::placeholder{color:var(--muted)}
 const TABS = ['config','jogos','analise','busca'];
 const LIGAS_IDS = {71:"br1",475:"paul",476:"cario",477:"mineiro",478:"gaucho",73:"copa",13:"lib",11:"sula",39:"pl",140:"liga",135:"serie",78:"bl",61:"l1",2:"ucl"};
 const LIGAS_LABELS = {br1:"Brasileirão",paul:"Paulistão",cario:"Carioca",mineiro:"Mineiro",gaucho:"Gaúcho",copa:"Copa BR",lib:"Libertadores",sula:"Sul-Americana",pl:"Premier",liga:"La Liga",serie:"Serie A",bl:"Bundesliga",l1:"Ligue 1",ucl:"Champions"};
-const SYSTEM_PROMPT = `Voce e especialista em apostas esportivas. Analise a partida com base nos DADOS REAIS fornecidos e responda EXATAMENTE neste formato de tags. Nao use JSON nem markdown.
+const SYSTEM_PROMPT = `Voce e especialista em apostas esportivas de todo o mundo, incluindo times da America do Sul, Ecuador, Paraguay e outros paises. Analise a partida e responda OBRIGATORIAMENTE neste formato de tags exato, sem excecoes, mesmo que nao conheca os times. Nao use JSON nem markdown. NUNCA omita as tags.
 [MATCH]Times[/MATCH]
 [LEAGUE]Liga[/LEAGUE]
 [CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]
@@ -510,8 +510,8 @@ async function analisarJogo(jogoId){
     const dataIA=await respIA.json();
     if(dataIA.error)throw new Error(dataIA.error);
     const raw=dataIA.text||'';
-    if(!raw.includes('[MATCH]'))throw new Error('Resposta inválida. Tente novamente.');
     const analise=buildAnalise(raw,`${jogo.casa} vs ${jogo.fora}`,true);
+    if(!analise.tips.length)throw new Error('Sem dicas geradas. Tente novamente.');
     renderAnalise(analise,'analiseResult');
     document.getElementById('analysisDot').innerHTML='<span style="background:var(--green);color:#000;border-radius:10px;padding:1px 4px;font-size:.5rem;margin-left:2px;font-weight:900">✓</span>';
 
@@ -544,8 +544,9 @@ async function buscaManual(){
     const data=await resp.json();
     if(data.error)throw new Error(data.error);
     const raw=data.text||'';
-    if(!raw.includes('[MATCH]'))throw new Error('Resposta inválida. Tente novamente.');
-    renderAnalise(buildAnalise(raw,input,false),'buscaResult');
+    const analise=buildAnalise(raw,input,false);
+    if(!analise.tips.length)throw new Error('Sem dicas geradas. Tente novamente.');
+    renderAnalise(analise,'buscaResult');
     document.getElementById('buscaInput').value='';
   }catch(e){showErro('buscaError','Erro: '+e.message)}
   finally{clearInterval(iv);hideEl('buscaLoading');document.getElementById('btnBusca').disabled=false}
@@ -554,14 +555,24 @@ async function buscaManual(){
 // ── BUILD & RENDER ANÁLISE ────────────────────────────────────────────────────
 function buildAnalise(raw,fallback,real){
   const confRaw=getTag(raw,'CONFIDENCE').toLowerCase();
+  let tips=parseTips(getTag(raw,'TIPS'));
+  // Fallback: try to parse tips from raw text if tags missing
+  if(!tips.length && raw.includes('|')){
+    tips=parseTips(raw.split('\n').filter(l=>l.trim().startsWith('-')).join('\n'));
+  }
+  // Last resort: generate minimal structure from any response
+  const matchTag=getTag(raw,'MATCH')||fallback;
+  const leagueTag=getTag(raw,'LEAGUE')||'';
+  const formHome=getTag(raw,'FORM_HOME')||getTag(raw,'FORM_CASA')||'';
+  const formAway=getTag(raw,'FORM_AWAY')||getTag(raw,'FORM_FORA')||'';
   return{
-    match:getTag(raw,'MATCH')||fallback,
-    league:getTag(raw,'LEAGUE'),
+    match:matchTag,league:leagueTag,
     confidence:confRaw.includes('alta')?'high':confRaw.includes('baixa')?'low':'mid',
-    formHome:getTag(raw,'FORM_HOME'),formAway:getTag(raw,'FORM_AWAY'),
-    squadHome:getTag(raw,'SQUAD_HOME'),squadAway:getTag(raw,'SQUAD_AWAY'),
-    h2h:getTag(raw,'H2H'),context:getTag(raw,'CONTEXT'),
-    tips:parseTips(getTag(raw,'TIPS')),real
+    formHome,formAway,
+    squadHome:getTag(raw,'SQUAD_HOME')||getTag(raw,'SQUAD_CASA')||'',
+    squadAway:getTag(raw,'SQUAD_AWAY')||getTag(raw,'SQUAD_FORA')||'',
+    h2h:getTag(raw,'H2H')||'',context:getTag(raw,'CONTEXT')||'',
+    tips,real
   };
 }
 
