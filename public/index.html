@@ -291,11 +291,7 @@ function showTab(t){
 }
 // Hide config tab from nav if already connected
 function updateNavVisibility(){
-  const configNav = document.getElementById('nav-config');
-  const configTab = document.getElementById('tab-config');
-  if(savedApiKey && todosJogos.length > 0){
-    configNav.style.opacity = '0.4';
-  }
+  // nothing needed
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
@@ -303,13 +299,14 @@ document.getElementById('dateLabel').textContent = new Date().toLocaleDateString
 setInterval(()=>renderJogos(),60000);
 
 // Manual connect - user clicks button
+// Init tabs correctly on load
+document.addEventListener('DOMContentLoaded', ()=>{ showTab('jogos'); });
 
 // ── CONECTAR ──────────────────────────────────────────────────────────────────
 async function conectar(silent=false){
   const btn = document.getElementById('btnRecarregar');
   if(btn){ btn.disabled=true; btn.textContent='Buscando jogos...'; }
-  const btnOld = document.getElementById('btnConnect');
-  if(btnOld){ btnOld.disabled=true; btnOld.textContent='Buscando jogos...'; }
+
   if(!silent){ hideEl('erroConfig'); hideEl('successConfig'); }
   hideEl('jogosWarn');
   showEl('skeletons','flex');
@@ -341,7 +338,7 @@ async function conectar(silent=false){
     if(erroEl){ erroEl.textContent='Erro: '+e.message; erroEl.style.display='block'; }
   }finally{
     if(btn){ btn.disabled=false; btn.textContent='🔄 Recarregar Jogos do Dia'; }
-    if(btnOld){ btnOld.disabled=false; btnOld.textContent='✅ Conectar e Buscar Jogos'; }
+
   }
 }
 
