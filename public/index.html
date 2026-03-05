@@ -215,7 +215,7 @@ input::placeholder{color:var(--muted)}
 
     <!-- BUSCA -->
     <div id="pane-busca" style="display:none" class="fade-up">
-      <div class="warn" style="margin-bottom:14px">⚠️ Busca manual não usa dados reais. Para análise completa use a aba <strong style="color:var(--green)">Jogos</strong>.</div>
+
       <div style="font-size:.68rem;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Buscar qualquer partida</div>
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <input class="input" id="buscaInput" placeholder="Ex: Barcelona vs Atlético - La Liga..." onkeydown="if(event.key==='Enter')buscaManual()">
@@ -532,24 +532,134 @@ async function buscaManual(){
   showEl('buscaLoading');
   hideEl('buscaError');
   document.getElementById('buscaResult').innerHTML='';
-  let mi=0;
-  const msgs=['🔍 Buscando...','🤖 Gerando análise...','✅ Finalizando...'];
-  const iv=setInterval(()=>{mi=(mi+1)%msgs.length;document.getElementById('buscaStep').textContent=msgs[mi]},1800);
+
+  const setStep=(s)=>{ document.getElementById('buscaStep').textContent=s; };
+
   try{
+    // Tenta extrair os dois times do input
+    const partes = input.split(/\s+vs\s+|\s+x\s+/i);
+    let contexto = `PARTIDA: ${input}
+
+`;
+
+    if(partes.length >= 2){
+      const timeA = partes[0].trim();
+      const timeB = partes[1].replace(/[-–].*/,'').trim();
+
+      // Busca IDs dos times na API-Football
+      setStep('🔍 Buscando times na API...');
+      let homeId=null, awayId=null, fixtureId=null;
+
+      try{
+        const rA = await apiFoot(`teams?search=${encodeURIComponent(timeA)}`);
+        const rB = await apiFoot(`teams?search=${encodeURIComponent(timeB)}`);
+        if(rA.response&&rA.response.length>0) homeId=rA.response[0].team.id;
+        if(rB.response&&rB.response.length>0) awayId=rB.response[0].team.id;
+      }catch(e){}
+
+      // Se achou os dois times, busca fixture e dados reais
+      if(homeId && awayId){
+        setStep('📅 Procurando jogo recente...');
+        try{
+          const hoje = new Date().toISOString().split('T')[0];
+          const fx = await apiFoot(`fixtures?team=${homeId}&date=${hoje}`);
+          if(fx.response&&fx.response.length>0){
+            const match = fx.response.find(f=>
+              f.teams.home.id===homeId&&f.teams.away.id===awayId ||
+              f.teams.home.id===awayId&&f.teams.away.id===homeId
+            );
+            if(match) fixtureId=match.fixture.id;
+          }
+        }catch(e){}
+
+        // Busca forma e H2H
+        setStep('📊 Buscando dados reais dos times...');
+        try{
+          const fc=await apiFoot(`fixtures?team=${homeId}&last=5&status=FT`);
+          if(fc.response&&fc.response.length>0){
+            const forma=fc.response.map(f=>{
+              const isH=f.teams?.home?.id===homeId;
+              const adv=isH?f.teams.away.name:f.teams.home.name;
+              const gn=isH?f.goals?.home:f.goals?.away;
+              const ga=isH?f.goals?.away:f.goals?.home;
+              return `${gn>ga?'V':gn<ga?'D':'E'}(${gn}-${ga} vs ${adv})`;
+            }).join(', ');
+            contexto+=`FORMA ${timeA.toUpperCase()} (ultimos 5): ${forma}
+`;
+          }
+        }catch(e){}
+        try{
+          const ff=await apiFoot(`fixtures?team=${awayId}&last=5&status=FT`);
+          if(ff.response&&ff.response.length>0){
+            const forma=ff.response.map(f=>{
+              const isH=f.teams?.home?.id===awayId;
+              const adv=isH?f.teams.away.name:f.teams.home.name;
+              const gn=isH?f.goals?.home:f.goals?.away;
+              const ga=isH?f.goals?.away:f.goals?.home;
+              return `${gn>ga?'V':gn<ga?'D':'E'}(${gn}-${ga} vs ${adv})`;
+            }).join(', ');
+            contexto+=`FORMA ${timeB.toUpperCase()} (ultimos 5): ${forma}
+
+`;
+          }
+        }catch(e){}
+        try{
+          const h2h=await apiFoot(`fixtures/headtohead?h2h=${homeId}-${awayId}&last=5`);
+          if(h2h.response&&h2h.response.length>0){
+            const texto=h2h.response.map(f=>{
+              const dt=new Date(f.fixture?.date).toLocaleDateString('pt-BR');
+              return `${dt}: ${f.teams?.home?.name} ${f.goals?.home}-${f.goals?.away} ${f.teams?.away?.name}`;
+            }).join(' | ');
+            contexto+=`H2H (ultimos 5): ${texto}
+
+`;
+          }
+        }catch(e){}
+
+        // Se tem fixture, busca escalação e lesões
+        if(fixtureId){
+          setStep('📋 Buscando escalação e lesões...');
+          try{
+            const lineups=await apiFoot(`fixtures/lineups?fixture=${fixtureId}`);
+            if(lineups.response&&lineups.response.length>=2){
+              const ec=lineups.response[0],ef=lineups.response[1];
+              contexto+=`ESCALACAO ${timeA.toUpperCase()} (${ec.formation||'?'}): ${(ec.startXI||[]).map(p=>p.player?.name).filter(Boolean).join(', ')}
+`;
+              contexto+=`ESCALACAO ${timeB.toUpperCase()} (${ef.formation||'?'}): ${(ef.startXI||[]).map(p=>p.player?.name).filter(Boolean).join(', ')}
+
+`;
+            }
+          }catch(e){}
+          try{
+            const inj=await apiFoot(`injuries?fixture=${fixtureId}`);
+            if(inj.response&&inj.response.length>0){
+              contexto+=`LESIONADOS: ${inj.response.map(l=>`${l.player?.name}(${l.team?.name})`).join(', ')}
+
+`;
+            }
+          }catch(e){}
+        }
+      }
+    }
+
+    // IA analisa com todos os dados coletados
+    setStep('🤖 IA analisando com dados reais...');
     const resp=await fetch('/api/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt:'Analise esta partida: '+input,systemPrompt:SYSTEM_PROMPT})
+      body:JSON.stringify({prompt:`Analise esta partida com os dados reais abaixo:
+
+${contexto}`,systemPrompt:SYSTEM_PROMPT})
     });
     const data=await resp.json();
     if(data.error)throw new Error(data.error);
     const raw=data.text||'';
-    const analise=buildAnalise(raw,input,false);
+    const analise=buildAnalise(raw,input,contexto.length>100);
     if(!analise.tips.length)throw new Error('Sem dicas geradas. Tente novamente.');
     renderAnalise(analise,'buscaResult');
     document.getElementById('buscaInput').value='';
   }catch(e){showErro('buscaError','Erro: '+e.message)}
-  finally{clearInterval(iv);hideEl('buscaLoading');document.getElementById('btnBusca').disabled=false}
+  finally{hideEl('buscaLoading');document.getElementById('btnBusca').disabled=false}
 }
 
 // ── BUILD & RENDER ANÁLISE ────────────────────────────────────────────────────
