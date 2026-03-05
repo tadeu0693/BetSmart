@@ -135,8 +135,8 @@ input::placeholder{color:var(--muted)}
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="showTab('config')" id="tab-config">⚙️ Config</button>
-    <button class="tab" onclick="showTab('jogos')" id="tab-jogos">⚽ Jogos</button>
+    <button class="tab" onclick="showTab('config')" id="tab-config">⚙️ Info</button>
+    <button class="tab active" onclick="showTab('jogos')" id="tab-jogos">⚽ Jogos</button>
     <button class="tab" onclick="showTab('analise')" id="tab-analise">📊 <span id="analysisDot"></span></button>
     <button class="tab" onclick="showTab('busca')" id="tab-busca">🔍 Buscar</button>
   </div>
@@ -144,43 +144,35 @@ input::placeholder{color:var(--muted)}
   <div class="content">
 
     <!-- CONFIG -->
-    <div id="pane-config" class="fade-up">
-      <div class="card" style="margin-bottom:16px;padding:20px">
-        <div class="info-label green" style="margin-bottom:14px">API-Football — Dados Reais</div>
-        <div style="background:rgba(68,138,255,.08);border:1px solid rgba(68,138,255,.2);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:.78rem;color:var(--muted2);line-height:1.7">
-          📡 <strong style="color:var(--text)">Com a chave configurada o app vai:</strong><br>
-          ✅ Buscar jogos reais do dia<br>
+    <div id="pane-config" style="display:none" class="fade-up">
+      <div id="erroConfig" style="display:none;margin-bottom:12px" class="error"></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div class="info-label green" style="margin-bottom:16px">ℹ️ Sobre o BetSmart IA</div>
+        <div style="font-size:.82rem;color:var(--muted2);line-height:1.8">
+          📡 <strong style="color:var(--text)">Dados em tempo real:</strong><br>
+          ✅ Jogos reais do dia<br>
           ✅ Escalação oficial dos times<br>
-          ✅ Lesionados e suspensos reais<br>
+          ✅ Lesionados e suspensos<br>
           ✅ Forma recente (últimos 5 jogos)<br>
           ✅ Histórico H2H real<br>
-          ✅ IA analisa com todos esses dados!
+          ✅ IA analisa com todos os dados<br><br>
+          🤖 <strong style="color:var(--text)">IA Anthropic Claude</strong> — análise profissional de apostas<br><br>
+          <span style="color:var(--yellow)">⚠️ App informativo. Apostas envolvem risco financeiro.</span>
         </div>
-        <div style="font-size:.75rem;color:var(--muted2);line-height:1.8;margin-bottom:14px">
-          1️⃣ Acesse <strong style="color:var(--green)">rapidapi.com/api-sports/api/api-football</strong><br>
-          2️⃣ Clique em <strong style="color:var(--text)">Subscribe → Basic (Free)</strong><br>
-          3️⃣ Em "Endpoints" copie sua <strong style="color:var(--text)">X-RapidAPI-Key</strong><br>
-          4️⃣ Cole abaixo e clique em Conectar
-        </div>
-        <input class="input" id="rapidApiKey" type="password" placeholder="Cole sua X-RapidAPI-Key aqui..." style="margin-bottom:10px">
-        <button class="btn primary" id="btnConnect" onclick="conectar()" style="width:100%;padding:12px;font-size:.9rem">✅ Conectar e Buscar Jogos</button>
-        <div id="erroConfig" style="display:none;margin-top:10px" class="error"></div>
       </div>
-      <div id="successConfig" style="display:none;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px">
+      <button class="btn primary" onclick="conectar()" style="width:100%;padding:12px;font-size:.9rem" id="btnRecarregar">🔄 Recarregar Jogos do Dia</button>
+      <div id="successConfig" style="display:none;margin-top:12px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px">
         <span style="font-size:1.4rem">✅</span>
         <div>
           <div style="font-size:.82rem;font-weight:700;color:var(--green)" id="successMsg">Conectado!</div>
-          <div style="font-size:.7rem;color:var(--muted2)">Dados reais ativos — vá para aba Jogos</div>
+          <div style="font-size:.7rem;color:var(--muted2)">Dados reais ativos</div>
         </div>
       </div>
     </div>
 
     <!-- JOGOS -->
-    <div id="pane-jogos" style="display:none" class="fade-up">
-      <div id="jogosWarn" class="warn" style="margin-bottom:16px;cursor:pointer" onclick="showTab('config')">
-        <strong style="color:var(--yellow)">⚙️ Configure a API primeiro</strong><br>
-        <span style="font-size:.72rem">Toque para ir às configurações →</span>
-      </div>
+    <div id="pane-jogos" class="fade-up">
+<div id="jogosWarn" style="display:none"></div>
       <div id="skeletons" style="display:none;flex-direction:column;gap:10px">
         <div class="skeleton"><div class="skel-line" style="height:10px;width:40%"></div><div class="skel-line" style="height:16px;width:80%"></div><div class="skel-line" style="height:10px;width:25%"></div></div>
         <div class="skeleton"><div class="skel-line" style="height:10px;width:35%"></div><div class="skel-line" style="height:16px;width:75%"></div><div class="skel-line" style="height:10px;width:30%"></div></div>
@@ -233,8 +225,8 @@ input::placeholder{color:var(--muted)}
 
   <!-- BOTTOM NAV -->
   <div class="bottom-nav">
-    <button class="nav-btn active" onclick="showTab('config')" id="nav-config"><span class="nav-icon">⚙️</span>Config</button>
-    <button class="nav-btn" onclick="showTab('jogos')" id="nav-jogos"><span class="nav-icon">⚽</span>Jogos</button>
+    <button class="nav-btn" onclick="showTab('config')" id="nav-config"><span class="nav-icon">ℹ️</span>Info</button>
+    <button class="nav-btn active" onclick="showTab('jogos')" id="nav-jogos"><span class="nav-icon">⚽</span>Jogos</button>
     <button class="nav-btn" onclick="showTab('analise')" id="nav-analise"><span class="nav-icon">📊</span>Análise</button>
     <button class="nav-btn" onclick="showTab('busca')" id="nav-busca"><span class="nav-icon">🔍</span>Buscar</button>
   </div>
@@ -247,7 +239,7 @@ input::placeholder{color:var(--muted)}
 const TABS = ['config','jogos','analise','busca'];
 const LIGAS_IDS = {71:"br1",475:"paul",476:"cario",477:"mineiro",478:"gaucho",73:"copa",13:"lib",11:"sula",39:"pl",140:"liga",135:"serie",78:"bl",61:"l1",2:"ucl"};
 const LIGAS_LABELS = {br1:"Brasileirão",paul:"Paulistão",cario:"Carioca",mineiro:"Mineiro",gaucho:"Gaúcho",copa:"Copa BR",lib:"Libertadores",sula:"Sul-Americana",pl:"Premier",liga:"La Liga",serie:"Serie A",bl:"Bundesliga",l1:"Ligue 1",ucl:"Champions"};
-const SYSTEM_PROMPT = `Voce e especialista em apostas esportivas de todo o mundo, incluindo times da America do Sul, Ecuador, Paraguay e outros paises. Analise a partida e responda OBRIGATORIAMENTE neste formato de tags exato, sem excecoes, mesmo que nao conheca os times. Nao use JSON nem markdown. NUNCA omita as tags.
+const SYSTEM_PROMPT = `Voce e um analista profissional de apostas esportivas com 20 anos de experiencia. Voce recebera dados reais da partida incluindo: escalacao, lesionados, forma recente, H2H, estatisticas avancadas da temporada (medias de gols, escanteios, cartoes), posicao na tabela, situacao no campeonato, desempenho casa vs fora, e odds reais das casas de apostas. Use TODOS esses dados para gerar uma analise PRECISA e PROFISSIONAL. Para dicas de gols use as medias reais. Para handicap compare a diferenca de qualidade. Para ambos marcam use o historico real. Quando tiver odds, identifique VALUE BETS (probabilidade real maior que a odd implica). Responda OBRIGATORIAMENTE neste formato de tags exato, sem excecoes. Nao use JSON nem markdown. NUNCA omita as tags.
 [MATCH]Times[/MATCH]
 [LEAGUE]Liga[/LEAGUE]
 [CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]
@@ -258,23 +250,24 @@ const SYSTEM_PROMPT = `Voce e especialista em apostas esportivas de todo o mundo
 [H2H]Analise o historico real de confrontos em 2 frases.[/H2H]
 [CONTEXT]Contexto e importancia da partida em 2 frases.[/CONTEXT]
 [TIPS]
-- Resultado Final | Time vence | Razao baseada nos dados reais | **** | Baixo
-- Ambos Marcam | Sim ou Nao | Razao | *** | Medio
-- Total de Gols | Mais de 2.5 | Razao | *** | Medio
-- Total de Gols | Menos de 2.5 | Razao | ** | Medio
-- Escanteios | Mais de 9.5 | Razao | ** | Medio
-- Cartoes | Mais de 3.5 | Razao | ** | Alto
-- Placar Correto | Placar provavel | Razao | * | Alto
-- Marcador | Nome do jogador real | Razao | ** | Medio
-- Intervalo | Resultado provavel | Razao | ** | Alto
-- Dupla Chance | Opcao segura | Razao | **** | Baixo
+- Resultado Final | Vencedor mais provavel | Baseado em forma+H2H+tabela+odds. Cite dados reais | **** | Baixo
+- Ambos Marcam | Sim ou Nao | Cite % real de jogos que ambos marcaram nessa temporada | *** | Medio
+- Total de Gols | Linha exata (ex: Mais de 2.5) | Media combinada de gols dos dois times. Cite o numero | *** | Medio
+- Handicap Asiatico | Time e linha (ex: Casa -0.5) | Baseado na diferenca de posicao na tabela e forma | ** | Medio
+- Escanteios | Linha exata | Baseado na media de escanteios e estilo de jogo dos times | ** | Medio
+- Cartoes | Linha exata | Baseado no historico disciplinar, rivalidade e arbitro | ** | Alto
+- Placar Correto | Placar exato | Mais provavel baseado nas medias de gols reais | * | Alto
+- Marcador | Nome real do jogador da escalacao | Artilheiro da temporada ou jogador em melhor fase | ** | Medio
+- Primeiro Tempo | Resultado no intervalo | Baseado no desempenho no 1o tempo de cada time | ** | Alto
+- VALUE BET | Mercado com melhor valor | Odd acima do esperado vs probabilidade real calculada | *** | Medio
 [/TIPS]
-Substitua pelos dados reais. Use * para estrelas. Mantenha pipe | como separador.`;
+CRITICO: Use os numeros reais dos dados. Seja especifico: "media de 2.3 gols/jogo" nao "costuma marcar muito". Identifique o VALUE BET comparando odds reais com probabilidade calculada. Use * para estrelas. Mantenha pipe | como separador.`;
 
 let todosJogos = [];
 let mostrarEncerrados = false;
 let ligaAtiva = 'all';
 let analisandoId = null;
+
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function toMin(h){const[a,b]=h.split(':').map(Number);return a*60+b}
@@ -290,18 +283,29 @@ function showTab(t){
     document.getElementById('nav-'+id).classList.toggle('active',id===t);
   });
 }
+// Hide config tab from nav if already connected
+function updateNavVisibility(){
+  const configNav = document.getElementById('nav-config');
+  const configTab = document.getElementById('tab-config');
+  if(savedApiKey && todosJogos.length > 0){
+    configNav.style.opacity = '0.4';
+  }
+}
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('dateLabel').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
 setInterval(()=>renderJogos(),60000);
 
+// Auto-connect on load
+setTimeout(()=>{ conectar(true); }, 300);
+
 // ── CONECTAR ──────────────────────────────────────────────────────────────────
-async function conectar(){
-  const key = document.getElementById('rapidApiKey').value.trim();
-  if(!key){showErro('erroConfig','Cole sua X-RapidAPI-Key!');return}
-  const btn = document.getElementById('btnConnect');
-  btn.disabled=true; btn.textContent='Buscando jogos...';
-  hideEl('erroConfig'); hideEl('successConfig');
+async function conectar(silent=false){
+  const btn = document.getElementById('btnRecarregar');
+  if(btn){ btn.disabled=true; btn.textContent='Buscando jogos...'; }
+  const btnOld = document.getElementById('btnConnect');
+  if(btnOld){ btnOld.disabled=true; btnOld.textContent='Buscando jogos...'; }
+  if(!silent){ hideEl('erroConfig'); hideEl('successConfig'); }
   document.getElementById('jogosWarn').style.display='none';
   showEl('skeletons','flex');
 
@@ -329,7 +333,8 @@ async function conectar(){
     hideEl('skeletons');
     showErro('erroConfig', e.message);
   }finally{
-    btn.disabled=false; btn.textContent='✅ Conectar e Buscar Jogos';
+    if(btn){ btn.disabled=false; btn.textContent='🔄 Recarregar Jogos do Dia'; }
+    if(btnOld){ btnOld.disabled=false; btnOld.textContent='✅ Conectar e Buscar Jogos'; }
   }
 }
 
@@ -496,11 +501,150 @@ async function analisarJogo(jogoId){
           const dt=new Date(f.fixture?.date).toLocaleDateString('pt-BR');
           return `${dt}: ${f.teams?.home?.name} ${f.goals?.home}-${f.goals?.away} ${f.teams?.away?.name}`;
         }).join(' | ');
-        contexto+=`H2H (ultimos 5): ${texto}\n\n`;
+        contexto+=`H2H (ultimos 5): ${texto}
+
+`;
       }
     }catch(e){}
 
-    // 6. IA analisa
+    // 6. Estatísticas avançadas da temporada (gols, escanteios, cartões, casa vs fora)
+    setStep('📈 Buscando estatísticas avançadas...');
+    try{
+      const [stCasa, stFora] = await Promise.all([
+        apiFoot(`teams/statistics?team=${jogo.homeId}&season=${jogo.season}&league=${jogo.ligaApiId}`),
+        apiFoot(`teams/statistics?team=${jogo.awayId}&season=${jogo.season}&league=${jogo.ligaApiId}`)
+      ]);
+      const sc = stCasa.response;
+      const sf = stFora.response;
+      if(sc){
+        const pg = sc.fixtures?.played?.total||1;
+        const pgH = sc.fixtures?.played?.home||1;
+        const pgA = sc.fixtures?.played?.away||1;
+        const gMarcados = sc.goals?.for?.total?.total||0;
+        const gSofridos = sc.goals?.against?.total?.total||0;
+        const gMarcH = sc.goals?.for?.total?.home||0;
+        const gMarcA = sc.goals?.for?.total?.away||0;
+        const gSofH = sc.goals?.against?.total?.home||0;
+        const gSofA = sc.goals?.against?.total?.away||0;
+        const wins = sc.fixtures?.wins?.total||0;
+        const draws = sc.fixtures?.draws?.total||0;
+        const loses = sc.fixtures?.loses?.total||0;
+        const mediaGolsM = (gMarcados/pg).toFixed(1);
+        const mediaGolsS = (gSofridos/pg).toFixed(1);
+        const mediaGolsH = ((gMarcH+gSofH)/pgH).toFixed(1);
+        const mediaGolsA = ((gMarcA+gSofA)/pgA).toFixed(1);
+        const cleanSheets = sc.clean_sheet?.total||0;
+        const btts = sc.failed_to_score ? pg - sc.failed_to_score.total : '?';
+        contexto+=`STATS ${jogo.casa.toUpperCase()} na temporada (${pg} jogos): `;
+        contexto+=`${wins}V/${draws}E/${loses}D | `;
+        contexto+=`Media gols marcados: ${mediaGolsM}/jogo | Media gols sofridos: ${mediaGolsS}/jogo | `;
+        contexto+=`Media total de gols em casa: ${mediaGolsH}/jogo | Media total de gols fora: ${mediaGolsA}/jogo | `;
+        contexto+=`Clean sheets: ${cleanSheets} | Jogos ambos marcaram: ${btts}
+`;
+        if(sc.lineups&&sc.lineups.length>0){
+          const formacaoPrincipal = sc.lineups.sort((a,b)=>b.played-a.played)[0];
+          contexto+=`Formacao principal: ${formacaoPrincipal.formation} (${formacaoPrincipal.played}x usada)
+`;
+        }
+      }
+      if(sf){
+        const pg = sf.fixtures?.played?.total||1;
+        const pgH = sf.fixtures?.played?.home||1;
+        const pgA = sf.fixtures?.played?.away||1;
+        const gMarcados = sf.goals?.for?.total?.total||0;
+        const gSofridos = sf.goals?.against?.total?.total||0;
+        const gMarcH = sf.goals?.for?.total?.home||0;
+        const gMarcA = sf.goals?.for?.total?.away||0;
+        const gSofH = sf.goals?.against?.total?.home||0;
+        const gSofA = sf.goals?.against?.total?.away||0;
+        const wins = sf.fixtures?.wins?.total||0;
+        const draws = sf.fixtures?.draws?.total||0;
+        const loses = sf.fixtures?.loses?.total||0;
+        const mediaGolsM = (gMarcados/pg).toFixed(1);
+        const mediaGolsS = (gSofridos/pg).toFixed(1);
+        const mediaGolsH = ((gMarcH+gSofH)/pgH).toFixed(1);
+        const mediaGolsA = ((gMarcA+gSofA)/pgA).toFixed(1);
+        const cleanSheets = sf.clean_sheet?.total||0;
+        const btts = sf.failed_to_score ? pg - sf.failed_to_score.total : '?';
+        contexto+=`STATS ${jogo.fora.toUpperCase()} na temporada (${pg} jogos): `;
+        contexto+=`${wins}V/${draws}E/${loses}D | `;
+        contexto+=`Media gols marcados: ${mediaGolsM}/jogo | Media gols sofridos: ${mediaGolsS}/jogo | `;
+        contexto+=`Media total de gols em casa: ${mediaGolsH}/jogo | Media total de gols fora: ${mediaGolsA}/jogo | `;
+        contexto+=`Clean sheets: ${cleanSheets} | Jogos ambos marcaram: ${btts}
+`;
+        if(sf.lineups&&sf.lineups.length>0){
+          const formacaoPrincipal = sf.lineups.sort((a,b)=>b.played-a.played)[0];
+          contexto+=`Formacao principal: ${formacaoPrincipal.formation} (${formacaoPrincipal.played}x usada)
+`;
+        }
+        contexto+='
+';
+      }
+    }catch(e){ contexto+=`STATS: Indisponivel
+
+`; }
+
+    // 7. Posição na tabela
+    setStep('🏆 Buscando posição na tabela...');
+    try{
+      const standings = await apiFoot(`standings?season=${jogo.season}&league=${jogo.ligaApiId}`);
+      if(standings.response&&standings.response.length>0){
+        const league = standings.response[0]?.league;
+        if(league&&league.standings){
+          const allStandings = league.standings.flat();
+          const posHome = allStandings.find(t=>t.team.id===jogo.homeId);
+          const posAway = allStandings.find(t=>t.team.id===jogo.awayId);
+          if(posHome){
+            contexto+=`TABELA ${jogo.casa.toUpperCase()}: ${posHome.rank}o lugar | ${posHome.points}pts | `;
+            contexto+=`${posHome.all.win}V/${posHome.all.draw}E/${posHome.all.lose}D | `;
+            contexto+=`Gols: ${posHome.all.goals.for}-${posHome.all.goals.against} | `;
+            contexto+=`Forma recente: ${posHome.form||'?'}
+`;
+            if(posHome.description) contexto+=`Situacao: ${posHome.description}
+`;
+          }
+          if(posAway){
+            contexto+=`TABELA ${jogo.fora.toUpperCase()}: ${posAway.rank}o lugar | ${posAway.points}pts | `;
+            contexto+=`${posAway.all.win}V/${posAway.all.draw}E/${posAway.all.lose}D | `;
+            contexto+=`Gols: ${posAway.all.goals.for}-${posAway.all.goals.against} | `;
+            contexto+=`Forma recente: ${posAway.form||'?'}
+`;
+            if(posAway.description) contexto+=`Situacao: ${posAway.description}
+`;
+          }
+          contexto+='
+';
+        }
+      }
+    }catch(e){ contexto+=`TABELA: Indisponivel
+
+`; }
+
+    // 8. Odds reais
+    setStep('💰 Buscando odds das casas de apostas...');
+    try{
+      const odds = await apiFoot(`odds?fixture=${jogoId}&bookmaker=8`);
+      if(odds.response&&odds.response.length>0){
+        const bookmaker = odds.response[0]?.bookmakers?.[0];
+        if(bookmaker){
+          contexto+=`ODDS (${bookmaker.name}):
+`;
+          bookmaker.bets?.forEach(bet=>{
+            if(['Match Winner','Goals Over/Under','Both Teams Score','Asian Handicap'].includes(bet.name)){
+              const valores = bet.values.map(v=>`${v.value}: ${v.odd}`).join(' | ');
+              contexto+=`${bet.name}: ${valores}
+`;
+            }
+          });
+          contexto+='
+';
+        }
+      }
+    }catch(e){ contexto+=`ODDS: Indisponivel
+
+`; }
+
+    // 9. IA analisa com TODOS os dados
     setStep('🤖 IA analisando com dados reais...');
     const respIA=await fetch('/api/analyze',{
       method:'POST',
