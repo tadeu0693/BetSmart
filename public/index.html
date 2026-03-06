@@ -360,9 +360,27 @@ function carregarJogos(){
   var hoje=new Date().toISOString().split('T')[0];
   var ligasIds=Object.keys(LIGAS).map(Number);
 
-  apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo').then(function(data){
-    var fixtures=data.response||[];
-    jogos=fixtures.filter(function(f){return ligasIds.indexOf(f.league.id)>=0;}).map(function(f){
+  // Busca por cada liga separadamente para garantir todos os jogos
+  var promises = ligasIds.map(function(ligaId){
+    return apiFoot('fixtures?date='+hoje+'&league='+ligaId+'&timezone=America%2FSao_Paulo')
+      .catch(function(){ return {response:[]}; });
+  });
+
+  Promise.all(promises).then(function(results){
+    var allFixtures = [];
+    var idsVistos = {};
+    for(var i=0;i<results.length;i++){
+      var fixtures = results[i].response || [];
+      for(var j=0;j<fixtures.length;j++){
+        var f = fixtures[j];
+        if(!idsVistos[f.fixture.id]){
+          idsVistos[f.fixture.id] = true;
+          allFixtures.push(f);
+        }
+      }
+    }
+
+    jogos = allFixtures.map(function(f){
       var horaBR=new Date(f.fixture.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
       return{id:f.fixture.id,liga:f.league.name,ligaId:LIGAS[f.league.id]||'all',ligaApiId:f.league.id,season:f.league.season,
         casa:f.teams.home.name,homeId:f.teams.home.id,fora:f.teams.away.name,awayId:f.teams.away.id,hora:horaBR,bandeira:FLAGS[f.league.id]||'🌍'};
@@ -370,6 +388,11 @@ function carregarJogos(){
 
     hide('j-loading');
     document.getElementById('realBadge').style.display='inline-block';
+    if(jogos.length===0){
+      show('j-inicio');
+      setErr('j-err','Nenhum jogo encontrado hoje nas ligas monitoradas.');
+      return;
+    }
     renderPills();
     renderJogos();
   }).catch(function(e){
