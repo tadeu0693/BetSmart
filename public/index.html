@@ -360,31 +360,29 @@ function carregarJogos(){
   var hoje=new Date().toISOString().split('T')[0];
   var ligasIds=Object.keys(LIGAS).map(Number);
 
-  // Busca por cada liga separadamente para garantir todos os jogos
-  var promises = ligasIds.map(function(ligaId){
-    return apiFoot('fixtures?date='+hoje+'&league='+ligaId+'&timezone=America%2FSao_Paulo')
-      .catch(function(){ return {response:[]}; });
-  });
+  // Busca única com todas as ligas em sequência de IDs (economiza requests)
+  // A API retorna todos os resultados quando passamos múltiplos IDs separados por hífen
+  var ligasParam = ligasIds.join('-');
+  apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo&league='+ligasParam).then(function(data){
+    var fixtures = data.response || [];
 
-  Promise.all(promises).then(function(results){
-    var allFixtures = [];
-    var idsVistos = {};
-    for(var i=0;i<results.length;i++){
-      var fixtures = results[i].response || [];
-      for(var j=0;j<fixtures.length;j++){
-        var f = fixtures[j];
-        if(!idsVistos[f.fixture.id]){
-          idsVistos[f.fixture.id] = true;
-          allFixtures.push(f);
-        }
-      }
+    // Se a API não suportar múltiplos IDs, filtra manualmente
+    if(fixtures.length === 0){
+      // Tenta sem filtro de liga e filtra no cliente
+      return apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo').then(function(d2){
+        return d2.response || [];
+      });
     }
-
-    jogos = allFixtures.map(function(f){
-      var horaBR=new Date(f.fixture.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
-      return{id:f.fixture.id,liga:f.league.name,ligaId:LIGAS[f.league.id]||'all',ligaApiId:f.league.id,season:f.league.season,
-        casa:f.teams.home.name,homeId:f.teams.home.id,fora:f.teams.away.name,awayId:f.teams.away.id,hora:horaBR,bandeira:FLAGS[f.league.id]||'🌍'};
-    }).sort(function(a,b){return toMin(a.hora)-toMin(b.hora);});
+    return fixtures;
+  }).then(function(fixtures){
+    jogos = fixtures
+      .filter(function(f){ return ligasIds.indexOf(f.league.id) >= 0; })
+      .map(function(f){
+        var horaBR=new Date(f.fixture.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+        return{id:f.fixture.id,liga:f.league.name,ligaId:LIGAS[f.league.id]||'all',ligaApiId:f.league.id,season:f.league.season,
+          casa:f.teams.home.name,homeId:f.teams.home.id,fora:f.teams.away.name,awayId:f.teams.away.id,hora:horaBR,bandeira:FLAGS[f.league.id]||'🌍'};
+      })
+      .sort(function(a,b){return toMin(a.hora)-toMin(b.hora);});
 
     hide('j-loading');
     document.getElementById('realBadge').style.display='inline-block';
@@ -398,7 +396,7 @@ function carregarJogos(){
   }).catch(function(e){
     hide('j-loading');
     show('j-inicio');
-    setErr('j-err','Erro: '+e.message);
+    setErr('j-err','Erro ao carregar jogos: '+e.message);
   });
 }
 
