@@ -176,7 +176,6 @@ input::placeholder{color:var(--mu)}
     <div id="j-pills" class="pills" style="display:none"></div>
     <div id="j-meta" style="display:none;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div style="font-size:.65rem;color:var(--mu2);font-weight:600" id="j-metatxt"></div>
-      <button class="btn ghost" id="btnEnc" onclick="toggleEnc()" style="padding:3px 10px;font-size:.6rem;border-radius:20px">Ver encerrados</button>
     </div>
     <div id="j-list" style="display:none;flex-direction:column;gap:10px"></div>
     <div id="j-empty" class="empty" style="display:none"><div class="emptyi">📭</div><div>Nenhum jogo encontrado hoje.</div></div>
@@ -198,10 +197,13 @@ input::placeholder{color:var(--mu)}
   <div class="pane" id="pane-busca">
     <div style="font-size:.65rem;color:var(--mu2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Buscar qualquer partida</div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
-      <input class="inp" id="b-inp" placeholder="Ex: Flamengo vs Palmeiras...">
+      <input class="inp" id="b-inp" placeholder="Ex: Flamengo vs Palmeiras - Brasileirão">
       <button class="btn pri" id="b-btn" onclick="buscaManual()" style="padding:11px 18px;font-size:.9rem;flex-shrink:0">⚡</button>
     </div>
-    <div style="font-size:.68rem;color:var(--mu);margin-bottom:16px">Busca dados reais dos times automaticamente</div>
+    <div style="font-size:.68rem;color:var(--mu);margin-bottom:16px">
+  💡 Funciona melhor com times das ligas monitoradas.<br>
+  Para séries menores, use: <strong style="color:var(--mu2)">Time A vs Time B - Nome da Liga</strong>
+</div>
     <div id="b-loading" style="display:none;text-align:center;padding:36px 20px">
       <div class="spin md" style="margin:0 auto 12px"></div>
       <div class="lstep" id="b-step">Buscando...</div>
@@ -256,7 +258,7 @@ var LABELS = {br1:'Brasileirão',paul:'Paulistão',cario:'Carioca',mineiro:'Mine
 var FLAGS  = {71:'🇧🇷',475:'🇧🇷',476:'🇧🇷',477:'🇧🇷',478:'🇧🇷',73:'🇧🇷',13:'🌎',11:'🌎',39:'🏴',140:'🇪🇸',135:'🇮🇹',78:'🇩🇪',61:'🇫🇷',2:'🏆'};
 var TABS = ['jogos','analise','busca','info'];
 
-var SYS = 'Voce e analista profissional de apostas com 20 anos de experiencia. Recebera dados reais: escalacao, lesionados, forma, H2H, estatisticas, tabela e odds. Use TODOS para analise PRECISA. Cite numeros reais. Identifique VALUE BETS. Responda OBRIGATORIAMENTE neste formato:\n[MATCH]Times[/MATCH]\n[LEAGUE]Liga[/LEAGUE]\n[CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]\n[FORM_HOME]Forma real casa em 2-3 frases com numeros.[/FORM_HOME]\n[FORM_AWAY]Forma real visitante em 2-3 frases com numeros.[/FORM_AWAY]\n[SQUAD_HOME]Escalacao e lesionados casa em 2 frases.[/SQUAD_HOME]\n[SQUAD_AWAY]Escalacao e lesionados visitante em 2 frases.[/SQUAD_AWAY]\n[H2H]Historico real em 2 frases.[/H2H]\n[CONTEXT]Contexto e posicao na tabela em 2 frases.[/CONTEXT]\n[TIPS]\n- Resultado Final | Vencedor | Justificativa com dados reais | **** | Baixo\n- Ambos Marcam | Sim/Nao | % real de jogos | *** | Medio\n- Total Gols | Mais/Menos X.X | Media combinada real | *** | Medio\n- Handicap | Time linha | Diferenca de qualidade | ** | Medio\n- Escanteios | Mais/Menos X.X | Media real | ** | Medio\n- Cartoes | Mais/Menos X.X | Historico disciplinar | ** | Alto\n- Placar Correto | X-X | Baseado nas medias reais | * | Alto\n- Marcador | Nome jogador real | Artilheiro/forma | ** | Medio\n- 1o Tempo | Resultado | Desempenho no 1o tempo | ** | Alto\n- Value Bet | Mercado | Odd acima da prob real | *** | Medio\n[/TIPS]\nUse * para estrelas. Pipe | como separador. NUNCA omita as tags.';
+var SYS = 'Voce e analista profissional de apostas com 20 anos de experiencia. Recebera dados reais: escalacao, lesionados, forma, H2H, estatisticas, tabela e odds. Use TODOS para analise PRECISA. Cite numeros reais. Identifique VALUE BETS. Responda OBRIGATORIAMENTE neste formato:\n[MATCH]Times[/MATCH]\n[LEAGUE]Liga[/LEAGUE]\n[CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]\n[FORM_HOME]Forma real casa em 2-3 frases com numeros.[/FORM_HOME]\n[FORM_AWAY]Forma real visitante em 2-3 frases com numeros.[/FORM_AWAY]\n[SQUAD_HOME]Escalacao e lesionados casa em 2 frases.[/SQUAD_HOME]\n[SQUAD_AWAY]Escalacao e lesionados visitante em 2 frases.[/SQUAD_AWAY]\n[H2H]Historico real em 2 frases.[/H2H]\n[CONTEXT]Contexto e posicao na tabela em 2 frases.[/CONTEXT]\n[TIPS]\n- Resultado Final | Vencedor | Justificativa com dados reais | **** | Baixo\n- Ambos Marcam | Sim/Nao | % real de jogos | *** | Medio\n- Total Gols | Mais/Menos X.X | Media combinada real | *** | Medio\n- Handicap | Time linha | Diferenca de qualidade | ** | Medio\n- Escanteios | Mais/Menos X.X | Media real | ** | Medio\n- Cartoes | Mais/Menos X.X | Historico disciplinar | ** | Alto\n- Placar Correto | X-X | Baseado nas medias reais | * | Alto\n- Marcador | Nome jogador real | Artilheiro/forma | ** | Medio\n- 1o Tempo | Resultado | Desempenho no 1o tempo | ** | Alto\n- Value Bet | Mercado | Odd acima da prob real | *** | Medio\n[/TIPS]\nUse * para estrelas. Pipe | como separador. NUNCA omita as tags. IMPORTANTE: baseie TODAS as dicas exclusivamente nos dados reais fornecidos. Se nao houver dados suficientes para um mercado especifico, indique claramente na justificativa que os dados sao insuficientes para aquele mercado.';
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.getElementById('dateEl').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
@@ -400,51 +402,72 @@ function renderJogos(){
   if(!jogos.length) return;
   var nm=nowMin();
   var filtrados=ligaAtiva==='all'?jogos:jogos.filter(function(j){return j.ligaId===ligaAtiva;});
+
+  // Count próximos for header
   var proximos=filtrados.filter(function(j){return toMin(j.hora)>nm-105;});
-  var encerrados=filtrados.filter(function(j){return toMin(j.hora)<=nm-105;});
-  var mostrar=mostrarEnc?filtrados:proximos;
+  document.getElementById('nextCount').textContent=proximos.length;
 
-  document.getElementById('nextCount').textContent=jogos.filter(function(j){return toMin(j.hora)>nm-105;}).length;
-
-  if(encerrados.length>0){
-    document.getElementById('j-metatxt').textContent=proximos.length+' próximo(s) • '+encerrados.length+' encerrado(s)';
-    document.getElementById('btnEnc').textContent=mostrarEnc?'Ocultar encerrados':'Ver encerrados';
+  // Summary info
+  var enc=filtrados.filter(function(j){return toMin(j.hora)<=nm-105;});
+  var aoVivoList=filtrados.filter(function(j){var m=toMin(j.hora);return m<=nm&&m>nm-105;});
+  var futuros=filtrados.filter(function(j){return toMin(j.hora)>nm;});
+  if(filtrados.length>0){
+    var parts=[];
+    if(enc.length) parts.push(enc.length+' encerrado(s)');
+    if(aoVivoList.length) parts.push(aoVivoList.length+' ao vivo');
+    if(futuros.length) parts.push(futuros.length+' próximo(s)');
+    document.getElementById('j-metatxt').textContent=parts.join(' • ');
     show('j-meta','flex');
   } else { hide('j-meta'); }
 
   var list=document.getElementById('j-list');
   list.innerHTML='';
-  if(!mostrar.length){show('j-empty');hide('j-list');return;}
+  if(!filtrados.length){show('j-empty');hide('j-list');return;}
   hide('j-empty');
   show('j-list','flex');
 
-  for(var i=0;i<mostrar.length;i++){
-    (function(jogo,idx){
-      var jMin=toMin(jogo.hora), nm2=nowMin();
-      var aoVivo=jMin<=nm2&&jMin>nm2-105;
-      var enc=jMin<=nm2-105;
-      var isLoading=analisandoId===jogo.id;
-      var div=document.createElement('div');
-      div.style.cssText='animation:fadeUp .28s ease '+(idx*.04)+'s both';
-      if(isLoading){
-        div.innerHTML='<div class="card" style="border-color:rgba(0,230,118,.3)"><div style="display:flex;align-items:center;gap:12px"><div class="spin sm"></div><div class="lstep" id="jstep-'+jogo.id+'">Buscando dados reais...</div></div></div>';
-      } else {
-        var liveBdg=aoVivo?'<span class="b live">● AO VIVO</span>':'';
-        var encBdg=enc?'<span class="b done">ENCERRADO</span>':'';
-        var btnHtml=enc?'':'<button class="mbtn" onclick="event.stopPropagation();analisarJogo('+jogo.id+')">⚡ Analisar</button>';
-        div.innerHTML='<div class="card'+(enc?'':' tap')+'" style="opacity:'+(enc?.45:1)+'"'+(enc?'':' onclick="analisarJogo('+jogo.id+')"')+'>'
-          +'<div class="mrow"><div style="flex:1;min-width:0">'
-          +'<div class="mliga">'+jogo.bandeira+' '+jogo.liga+' '+liveBdg+encBdg+'</div>'
-          +'<div class="mteams"><span class="mteam">'+jogo.casa+'</span><span class="mvs">VS</span><span class="mteam r">'+jogo.fora+'</span></div>'
-          +'<div class="mhora" style="color:'+(aoVivo?'var(--rd)':'var(--mu2)')+'">⏰ '+jogo.hora+'</div>'
-          +'</div>'+btnHtml+'</div></div>';
-      }
-      list.appendChild(div);
-    })(mostrar[i],i);
+  // Group by status: encerrados, ao vivo, proximos
+  var grupos=[
+    {label:'🔴 Ao Vivo',items:aoVivoList},
+    {label:'⏰ Próximos',items:futuros},
+    {label:'✅ Encerrados',items:enc}
+  ];
+
+  var idx=0;
+  for(var g=0;g<grupos.length;g++){
+    var grupo=grupos[g];
+    if(!grupo.items.length) continue;
+
+    // Section header
+    var header=document.createElement('div');
+    header.style.cssText='font-size:.62rem;font-weight:800;color:var(--mu2);text-transform:uppercase;letter-spacing:1px;padding:10px 4px 6px;border-bottom:1px solid var(--b1);margin-bottom:4px';
+    header.textContent=grupo.label+' ('+grupo.items.length+')';
+    if(grupo.label.indexOf('Vivo')>=0) header.style.color='var(--rd)';
+    else if(grupo.label.indexOf('ximos')>=0) header.style.color='var(--gr)';
+    list.appendChild(header);
+
+    for(var i=0;i<grupo.items.length;i++){
+      (function(jogo,cardIdx,isEnc,isLive){
+        var isLoading=analisandoId===jogo.id;
+        var div=document.createElement('div');
+        div.style.cssText='animation:fadeUp .22s ease '+(cardIdx*.03)+'s both';
+        if(isLoading){
+          div.innerHTML='<div class="card" style="border-color:rgba(0,230,118,.3);margin-bottom:8px"><div style="display:flex;align-items:center;gap:12px"><div class="spin sm"></div><div class="lstep" id="jstep-'+jogo.id+'">Buscando dados reais...</div></div></div>';
+        } else {
+          var liveBdg=isLive?'<span class="b live">● AO VIVO</span>':'';
+          var btnHtml=isEnc?'<span class="b done" style="flex-shrink:0">ENCERRADO</span>':'<button class="mbtn" onclick="event.stopPropagation();analisarJogo('+jogo.id+')">⚡ Analisar</button>';
+          div.innerHTML='<div class="card'+(isEnc?'':' tap')+'" style="margin-bottom:8px;opacity:'+(isEnc?.5:1)+'"'+(isEnc?'':' onclick="analisarJogo('+jogo.id+')"')+'>'
+            +'<div class="mrow"><div style="flex:1;min-width:0">'
+            +'<div class="mliga">'+jogo.bandeira+' '+jogo.liga+(isLive?' '+liveBdg:'')+'</div>'
+            +'<div class="mteams"><span class="mteam">'+jogo.casa+'</span><span class="mvs">VS</span><span class="mteam r">'+jogo.fora+'</span></div>'
+            +'<div class="mhora" style="color:'+(isLive?'var(--rd)':isEnc?'var(--mu)':'var(--mu2)')+'">⏰ '+jogo.hora+'</div>'
+            +'</div>'+btnHtml+'</div></div>';
+        }
+        list.appendChild(div);
+      })(grupo.items[i], idx++, grupo.label.indexOf('Enc')>=0, grupo.label.indexOf('Vivo')>=0);
+    }
   }
 }
-
-function toggleEnc(){ mostrarEnc=!mostrarEnc; renderJogos(); }
 
 // ── ANALISAR ──────────────────────────────────────────────────────────────────
 function analisarJogo(jogoId){
@@ -601,7 +624,6 @@ function analisarJogo(jogoId){
       if(dataIA.error) throw new Error(dataIA.error);
       var raw=dataIA.text||'';
       var analise=buildAnalise(raw,jogo.casa+' vs '+jogo.fora,true);
-      if(!analise.tips.length) throw new Error('Sem dicas. Tente novamente.');
       hide('a-loading');
       renderAnalise(analise,'a-result');
       var te=document.getElementById('tab-analise');
@@ -690,8 +712,13 @@ function buscaManual(){
       if(data.error) throw new Error(data.error);
       var raw=data.text||'';
       var analise=buildAnalise(raw,input,ctx.length>100);
-      if(!analise.tips.length) throw new Error('Sem dicas. Tente novamente.');
       hide('b-loading');
+      if(!analise.tips.length){
+        setErr('b-err','⚠️ Sem dados reais encontrados para este jogo. ' +
+        'Times de séries menores (Série D, estaduais do Nordeste etc) podem não estar na API. ' +
+        'Para análise completa, use a aba ⚽ Jogos com os jogos do dia.');
+        return;
+      }
       renderAnalise(analise,'b-result');
       document.getElementById('b-inp').value='';
     });
