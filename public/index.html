@@ -253,9 +253,48 @@ var mostrarEnc = false;
 var analisandoId = null;
 
 // ── MAPAS ─────────────────────────────────────────────────────────────────────
-var LIGAS = {71:'br1',475:'paul',476:'cario',477:'mineiro',478:'gaucho',73:'copa',13:'lib',11:'sula',39:'pl',140:'liga',135:'serie',78:'bl',61:'l1',2:'ucl'};
-var LABELS = {br1:'Brasileirão',paul:'Paulistão',cario:'Carioca',mineiro:'Mineiro',gaucho:'Gaúcho',copa:'Copa BR',lib:'Libertadores',sula:'Sul-Americana',pl:'Premier League',liga:'La Liga',serie:'Serie A',bl:'Bundesliga',l1:'Ligue 1',ucl:'Champions'};
-var FLAGS  = {71:'🇧🇷',475:'🇧🇷',476:'🇧🇷',477:'🇧🇷',478:'🇧🇷',73:'🇧🇷',13:'🌎',11:'🌎',39:'🏴',140:'🇪🇸',135:'🇮🇹',78:'🇩🇪',61:'🇫🇷',2:'🏆'};
+var LIGAS = {
+  // Brasil
+  71:'br1', 475:'paul', 476:'cario', 477:'mineiro', 478:'gaucho',
+  73:'copa', 75:'brsb', 76:'brc', 77:'brd',
+  // Copa Brasil
+  72:'copabr',
+  // América do Sul
+  13:'lib', 11:'sula', 14:'recopa', 15:'sulsup',
+  // Europa - Principais
+  39:'pl', 140:'liga', 135:'serie', 78:'bl', 61:'l1',
+  // Europa - Segundas divisões
+  40:'ch', 141:'liga2', 136:'serieb', 79:'bl2', 62:'l2',
+  // Europa - Outras
+  94:'priml', 88:'erediv', 144:'belpro', 179:'scotpl',
+  197:'suisup', 218:'tursup', 235:'rusprem',
+  // Copa UEFA / Champions
+  2:'ucl', 3:'uel', 848:'uecl',
+  // Outros
+  1:'wcup', 4:'euro', 5:'nations',
+  // Paulistão (IDs alternativos)
+  481:'paulb', 482:'cario2',
+};
+var LABELS = {
+  br1:'Brasileirão', paul:'Paulistão', cario:'Carioca', mineiro:'Mineiro', gaucho:'Gaúcho',
+  brsb:'Série B', brc:'Série C', brd:'Série D', copa:'Copa BR', copabr:'Copa do Brasil',
+  lib:'Libertadores', sula:'Sul-Americana', recopa:'Recopa', sulsup:'Supercopa Sul',
+  pl:'Premier League', liga:'La Liga', serie:'Serie A', bl:'Bundesliga', l1:'Ligue 1',
+  ch:'Championship', liga2:'La Liga 2', serieb:'Serie B IT', bl2:'2. Bundesliga', l2:'Ligue 2',
+  priml:'Primeira Liga', erediv:'Eredivisie', belpro:'Pro League', scotpl:'Scottish PL',
+  suisup:'Super League', tursup:'Süper Lig', rusprem:'Premier Liga RU',
+  ucl:'Champions', uel:'Europa League', uecl:'Conference League',
+  wcup:'Copa do Mundo', euro:'Eurocopa', nations:'Nations League',
+  paulb:'Paulistão B', cario2:'Carioca B',
+};
+var FLAGS = {
+  71:'🇧🇷',475:'🇧🇷',476:'🇧🇷',477:'🇧🇷',478:'🇧🇷',72:'🇧🇷',73:'🇧🇷',75:'🇧🇷',76:'🇧🇷',77:'🇧🇷',481:'🇧🇷',482:'🇧🇷',
+  13:'🌎',11:'🌎',14:'🌎',15:'🌎',
+  39:'🏴',140:'🇪🇸',135:'🇮🇹',78:'🇩🇪',61:'🇫🇷',
+  40:'🏴',141:'🇪🇸',136:'🇮🇹',79:'🇩🇪',62:'🇫🇷',
+  94:'🇵🇹',88:'🇳🇱',144:'🇧🇪',179:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',197:'🇨🇭',218:'🇹🇷',235:'🇷🇺',
+  2:'🏆',3:'🏆',848:'🏆',1:'🌍',4:'🇪🇺',5:'🌍',
+};
 var TABS = ['jogos','analise','busca','info'];
 
 var SYS = 'Voce e analista profissional de apostas com 20 anos de experiencia. Recebera dados reais: escalacao, lesionados, forma, H2H, estatisticas, tabela e odds. Use TODOS para analise PRECISA. Cite numeros reais. Identifique VALUE BETS. Responda OBRIGATORIAMENTE neste formato:\n[MATCH]Times[/MATCH]\n[LEAGUE]Liga[/LEAGUE]\n[CONFIDENCE]Alta ou Media ou Baixa[/CONFIDENCE]\n[FORM_HOME]Forma real casa em 2-3 frases com numeros.[/FORM_HOME]\n[FORM_AWAY]Forma real visitante em 2-3 frases com numeros.[/FORM_AWAY]\n[SQUAD_HOME]Escalacao e lesionados casa em 2 frases.[/SQUAD_HOME]\n[SQUAD_AWAY]Escalacao e lesionados visitante em 2 frases.[/SQUAD_AWAY]\n[H2H]Historico real em 2 frases.[/H2H]\n[CONTEXT]Contexto e posicao na tabela em 2 frases.[/CONTEXT]\n[TIPS]\n- Resultado Final | Vencedor | Justificativa com dados reais | **** | Baixo\n- Ambos Marcam | Sim/Nao | % real de jogos | *** | Medio\n- Total Gols | Mais/Menos X.X | Media combinada real | *** | Medio\n- Handicap | Time linha | Diferenca de qualidade | ** | Medio\n- Escanteios | Mais/Menos X.X | Media real | ** | Medio\n- Cartoes | Mais/Menos X.X | Historico disciplinar | ** | Alto\n- Placar Correto | X-X | Baseado nas medias reais | * | Alto\n- Marcador | Nome jogador real | Artilheiro/forma | ** | Medio\n- 1o Tempo | Resultado | Desempenho no 1o tempo | ** | Alto\n- Value Bet | Mercado | Odd acima da prob real | *** | Medio\n[/TIPS]\nUse * para estrelas. Pipe | como separador. NUNCA omita as tags. IMPORTANTE: baseie TODAS as dicas exclusivamente nos dados reais fornecidos. Se nao houver dados suficientes para um mercado especifico, indique claramente na justificativa que os dados sao insuficientes para aquele mercado.';
@@ -363,10 +402,11 @@ function carregarJogos(){
   // Busca jogos: tenta geral primeiro, depois por liga se necessário
   function processFixtures(fixtures) {
     jogos = fixtures
-      .filter(function(f){ return ligasIds.indexOf(f.league.id) >= 0; })
       .map(function(f){
         var horaBR=new Date(f.fixture.date).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
-        return{id:f.fixture.id,liga:f.league.name,ligaId:LIGAS[f.league.id]||'all',ligaApiId:f.league.id,season:f.league.season,
+        var ligaId = LIGAS[f.league.id] || ('liga'+f.league.id);
+        var label = LABELS[ligaId] || f.league.name;
+        return{id:f.fixture.id,liga:f.league.name,ligaId:ligaId,ligaApiId:f.league.id,season:f.league.season,
           casa:f.teams.home.name,homeId:f.teams.home.id,fora:f.teams.away.name,awayId:f.teams.away.id,hora:horaBR,bandeira:FLAGS[f.league.id]||'🌍'};
       })
       .sort(function(a,b){return toMin(a.hora)-toMin(b.hora);});
@@ -382,17 +422,15 @@ function carregarJogos(){
     renderJogos();
   }
 
-  // Passo 1: busca geral do dia (sem filtro de liga)
+  // Busca geral do dia — mostra TODOS os jogos retornados pela API
   apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo').then(function(data){
     var fixtures = data.response || [];
-    var filtrados = fixtures.filter(function(f){ return ligasIds.indexOf(f.league.id) >= 0; });
 
-    if(filtrados.length > 0){
-      // Achou jogos na chamada geral
+    if(fixtures.length > 0){
       processFixtures(fixtures);
     } else {
-      // Passo 2: tenta buscar as 3 principais ligas individualmente em paralelo
-      var topLigas = [39, 140, 135, 78, 2, 71, 13]; // Premier, LaLiga, SerieA, Bundesliga, UCL, Brasileirao, Libertadores
+      // Fallback: busca por ligas principais individualmente
+      var topLigas = [39,140,135,78,2,71,13,61,94,88,3,848,40,141,136];
       var promises = topLigas.map(function(lid){
         return apiFoot('fixtures?date='+hoje+'&league='+lid+'&timezone=America%2FSao_Paulo')
           .then(function(d){ return d.response || []; })
@@ -411,7 +449,7 @@ function carregarJogos(){
   }).catch(function(e){
     hide('j-loading');
     show('j-inicio');
-    setErr('j-err','Erro ao carregar: '+e.message+'. Verifique sua conexão e tente novamente.');
+    setErr('j-err','Erro ao carregar: '+e.message+'. Verifique sua conexão.');
   });
 }
 
