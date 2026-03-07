@@ -360,21 +360,8 @@ function carregarJogos(){
   var hoje=new Date().toISOString().split('T')[0];
   var ligasIds=Object.keys(LIGAS).map(Number);
 
-  // Busca única com todas as ligas em sequência de IDs (economiza requests)
-  // A API retorna todos os resultados quando passamos múltiplos IDs separados por hífen
-  var ligasParam = ligasIds.join('-');
-  apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo&league='+ligasParam).then(function(data){
-    var fixtures = data.response || [];
-
-    // Se a API não suportar múltiplos IDs, filtra manualmente
-    if(fixtures.length === 0){
-      // Tenta sem filtro de liga e filtra no cliente
-      return apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo').then(function(d2){
-        return d2.response || [];
-      });
-    }
-    return fixtures;
-  }).then(function(fixtures){
+  // Busca jogos: tenta geral primeiro, depois por liga se necessário
+  function processFixtures(fixtures) {
     jogos = fixtures
       .filter(function(f){ return ligasIds.indexOf(f.league.id) >= 0; })
       .map(function(f){
@@ -388,15 +375,43 @@ function carregarJogos(){
     document.getElementById('realBadge').style.display='inline-block';
     if(jogos.length===0){
       show('j-inicio');
-      setErr('j-err','Nenhum jogo encontrado hoje nas ligas monitoradas.');
+      setErr('j-err','Nenhum jogo encontrado hoje nas ligas monitoradas. Tente amanhã ou use a busca manual.');
       return;
     }
     renderPills();
     renderJogos();
+  }
+
+  // Passo 1: busca geral do dia (sem filtro de liga)
+  apiFoot('fixtures?date='+hoje+'&timezone=America%2FSao_Paulo').then(function(data){
+    var fixtures = data.response || [];
+    var filtrados = fixtures.filter(function(f){ return ligasIds.indexOf(f.league.id) >= 0; });
+
+    if(filtrados.length > 0){
+      // Achou jogos na chamada geral
+      processFixtures(fixtures);
+    } else {
+      // Passo 2: tenta buscar as 3 principais ligas individualmente em paralelo
+      var topLigas = [39, 140, 135, 78, 2, 71, 13]; // Premier, LaLiga, SerieA, Bundesliga, UCL, Brasileirao, Libertadores
+      var promises = topLigas.map(function(lid){
+        return apiFoot('fixtures?date='+hoje+'&league='+lid+'&timezone=America%2FSao_Paulo')
+          .then(function(d){ return d.response || []; })
+          .catch(function(){ return []; });
+      });
+      Promise.all(promises).then(function(results){
+        var all = [], seen = {};
+        results.forEach(function(r){
+          r.forEach(function(f){
+            if(!seen[f.fixture.id]){ seen[f.fixture.id]=true; all.push(f); }
+          });
+        });
+        processFixtures(all);
+      });
+    }
   }).catch(function(e){
     hide('j-loading');
     show('j-inicio');
-    setErr('j-err','Erro ao carregar jogos: '+e.message);
+    setErr('j-err','Erro ao carregar: '+e.message+'. Verifique sua conexão e tente novamente.');
   });
 }
 
