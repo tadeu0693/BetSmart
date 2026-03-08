@@ -254,23 +254,27 @@ var analisandoId = null;
 
 // ── MAPAS ─────────────────────────────────────────────────────────────────────
 var LIGAS = {
-  // IDs do football-data.org (competition.id)
-  2021:'pl',    // Premier League
-  2014:'liga',  // La Liga
-  2019:'serie', // Serie A
-  2002:'bl',    // Bundesliga
-  2015:'l1',    // Ligue 1
-  2001:'ucl',   // Champions League
-  2018:'uel',   // Europa League
-  2013:'bsa',   // Brasileirão Série A
-  2152:'cli',   // Libertadores
-  2017:'ppl',   // Primeira Liga
-  2003:'ded',   // Eredivisie
+  // IDs football-data.org
+  2021:'pl', 2014:'liga', 2019:'serie', 2002:'bl', 2015:'l1',
+  2001:'ucl', 2018:'uel', 2013:'bsa', 2152:'cli', 2017:'ppl',
+  2003:'ded', 2016:'elc', 2000:'wc', 2004:'ec', 2011:'bl2',
+  // Paulistão e estaduais brasileiros
+  325:'paul', 326:'cario', 327:'mineiro', 328:'gaucho',
+  // Outros
+  2072:'nations',
 };
 var LABELS = {
   pl:'Premier League', liga:'La Liga', serie:'Serie A', bl:'Bundesliga', l1:'Ligue 1',
   ucl:'Champions', uel:'Europa League', bsa:'Brasileirão', cli:'Libertadores',
-  ppl:'Primeira Liga', ded:'Eredivisie',
+  ppl:'Primeira Liga', ded:'Eredivisie', elc:'Championship', wc:'Copa do Mundo',
+  ec:'Eurocopa', bl2:'2. Bundesliga', paul:'Paulistão', cario:'Carioca',
+  mineiro:'Mineiro', gaucho:'Gaúcho', nations:'Nations League',
+};
+var FLAGS = {
+  2021:'🏴',2014:'🇪🇸',2019:'🇮🇹',2002:'🇩🇪',2015:'🇫🇷',
+  2001:'🏆',2018:'🏆',2013:'🇧🇷',2152:'🌎',2017:'🇵🇹',
+  2003:'🇳🇱',2016:'🏴',2000:'🌍',2004:'🇪🇺',2011:'🇩🇪',
+  325:'🇧🇷',326:'🇧🇷',327:'🇧🇷',328:'🇧🇷',2072:'🌍',
 };
 var FLAGS = {
   2021:'🏴',2014:'🇪🇸',2019:'🇮🇹',2002:'🇩🇪',2015:'🇫🇷',
