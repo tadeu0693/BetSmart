@@ -254,26 +254,27 @@ var analisandoId = null;
 
 // ── MAPAS ─────────────────────────────────────────────────────────────────────
 var LIGAS = {
-  // Brasil
-  71:'br1', 475:'paul', 476:'cario', 477:'mineiro', 478:'gaucho',
-  73:'copa', 75:'brsb', 76:'brc', 77:'brd',
-  // Copa Brasil
-  72:'copabr',
-  // América do Sul
-  13:'lib', 11:'sula', 14:'recopa', 15:'sulsup',
-  // Europa - Principais
-  39:'pl', 140:'liga', 135:'serie', 78:'bl', 61:'l1',
-  // Europa - Segundas divisões
-  40:'ch', 141:'liga2', 136:'serieb', 79:'bl2', 62:'l2',
-  // Europa - Outras
-  94:'priml', 88:'erediv', 144:'belpro', 179:'scotpl',
-  197:'suisup', 218:'tursup', 235:'rusprem',
-  // Copa UEFA / Champions
-  2:'ucl', 3:'uel', 848:'uecl',
-  // Outros
-  1:'wcup', 4:'euro', 5:'nations',
-  // Paulistão (IDs alternativos)
-  481:'paulb', 482:'cario2',
+  // IDs do football-data.org (competition.id)
+  2021:'pl',    // Premier League
+  2014:'liga',  // La Liga
+  2019:'serie', // Serie A
+  2002:'bl',    // Bundesliga
+  2015:'l1',    // Ligue 1
+  2001:'ucl',   // Champions League
+  2018:'uel',   // Europa League
+  2013:'bsa',   // Brasileirão Série A
+  2152:'cli',   // Libertadores
+  2017:'ppl',   // Primeira Liga
+  2003:'ded',   // Eredivisie
+};
+var LABELS = {
+  pl:'Premier League', liga:'La Liga', serie:'Serie A', bl:'Bundesliga', l1:'Ligue 1',
+  ucl:'Champions', uel:'Europa League', bsa:'Brasileirão', cli:'Libertadores',
+  ppl:'Primeira Liga', ded:'Eredivisie',
+};
+var FLAGS = {
+  2021:'🏴',2014:'🇪🇸',2019:'🇮🇹',2002:'🇩🇪',2015:'🇫🇷',
+  2001:'🏆',2018:'🏆',2013:'🇧🇷',2152:'🌎',2017:'🇵🇹',2003:'🇳🇱',
 };
 var LABELS = {
   br1:'Brasileirão', paul:'Paulistão', cario:'Carioca', mineiro:'Mineiro', gaucho:'Gaúcho',
@@ -415,7 +416,7 @@ function carregarJogos(){
     document.getElementById('realBadge').style.display='inline-block';
     if(jogos.length===0){
       show('j-inicio');
-      setErr('j-err','Nenhum jogo encontrado hoje nas ligas monitoradas. Tente amanhã ou use a busca manual.');
+      setErr('j-err','⚠️ Nenhum jogo encontrado hoje. Verifique sua conexão ou tente novamente em instantes.');
       return;
     }
     renderPills();
