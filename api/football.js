@@ -27,7 +27,35 @@ function toFixture(m) {
 }
 
 // IDs numéricos antigos → códigos football-data.org
-const FD = { 39:'PL', 140:'PD', 135:'SA', 78:'BL1', 61:'FL1', 2:'UCL', 3:'UEL', 71:'BSA', 13:'CLI', 94:'PPL', 88:'DED', 848:'UECL' };
+const FD = {
+  // IDs numéricos antigos -> códigos football-data.org
+  39:'PL', 140:'PD', 135:'SA', 78:'BL1', 61:'FL1',
+  2:'UCL', 3:'UEL', 71:'BSA', 13:'CLI', 94:'PPL', 88:'DED',
+  // Diretos
+  'PL':'PL','PD':'PD','SA':'SA','BL1':'BL1','FL1':'FL1',
+  'UCL':'UCL','UEL':'UEL','BSA':'BSA','CLI':'CLI','PPL':'PPL','DED':'DED',
+  'ELC':'ELC','EC':'EC','WC':'WC','BL2':'BL2',
+};
+
+// TODAS as competições disponíveis no plano gratuito football-data.org
+const ALL_COMPETITIONS = [
+  'PL',   // Premier League
+  'PD',   // La Liga
+  'SA',   // Serie A
+  'BL1',  // Bundesliga
+  'FL1',  // Ligue 1
+  'UCL',  // Champions League
+  'UEL',  // Europa League
+  'BSA',  // Brasileirão Série A
+  'CLI',  // Copa Libertadores
+  'PPL',  // Primeira Liga
+  'DED',  // Eredivisie
+  'ELC',  // Championship (Inglaterra)
+  'EC',   // Eurocopa
+  'WC',   // Copa do Mundo
+  'BL2',  // 2. Bundesliga
+  'PL2',  // Premier League 2
+];
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,9 +74,25 @@ export default async function handler(req, res) {
     // ── JOGOS DO DIA ──────────────────────────────────────────────────────────
     if (ep === 'fixtures' && q.date && !q.team) {
       const date = q.date;
-      const data = await cached('day_' + date, 30*MIN, () =>
-        fdFetch(apiKey, `matches?dateFrom=${date}&dateTo=${date}`)
-      );
+      const data = await cached('day_' + date, 30*MIN, async () => {
+        // Tenta endpoint geral primeiro
+        try {
+          const d = await fdFetch(apiKey, `matches?dateFrom=${date}&dateTo=${date}`);
+          if (d.matches && d.matches.length > 0) return d;
+        } catch(e) {}
+
+        // Se geral retornar 0, busca competição por competição
+        let allMatches = [];
+        for (const comp of ALL_COMPETITIONS) {
+          try {
+            const d = await fdFetch(apiKey, `competitions/${comp}/matches?dateFrom=${date}&dateTo=${date}`);
+            if (d.matches && d.matches.length > 0) {
+              allMatches.push(...d.matches);
+            }
+          } catch(e) {} // ignora competições sem acesso
+        }
+        return { matches: allMatches };
+      });
       const fixtures = (data.matches || []).map(toFixture);
       return res.status(200).json({ response: fixtures, results: fixtures.length });
     }
