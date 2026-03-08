@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  const apiKey = process.env.APIFOOTBALL_KEY;
+  const apiKey = process.env.FOOTBALLDATA_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   let fixturesInfo = "não testado";
@@ -10,23 +10,27 @@ export default async function handler(req, res) {
   if (apiKey) {
     try {
       const hoje = new Date().toISOString().split('T')[0];
-      const resp = await fetch(`https://v3.football.api-sports.io/fixtures?date=${hoje}&timezone=America/Sao_Paulo`, {
-        headers: { "x-apisports-key": apiKey }
+      const resp = await fetch(`https://api.football-data.org/v4/matches?dateFrom=${hoje}&dateTo=${hoje}`, {
+        headers: { "X-Auth-Token": apiKey }
       });
       const data = await resp.json();
-      const fixtures = data.response || [];
-      leagueIds = [...new Set(fixtures.map(f => f.league.id))];
-      fixturesInfo = `${fixtures.length} jogos encontrados. Liga IDs: ${leagueIds.join(', ')}`;
+      if (data.errorCode) {
+        fixturesInfo = "ERRO: " + (data.message || JSON.stringify(data));
+      } else {
+        const matches = data.matches || [];
+        leagueIds = [...new Set(matches.map(m => m.competition?.name))];
+        fixturesInfo = matches.length + " jogos encontrados hoje. Competições: " + leagueIds.join(', ');
+      }
     } catch(e) {
       fixturesInfo = "Erro: " + e.message;
     }
   }
 
   return res.status(200).json({
-    APIFOOTBALL_KEY: apiKey ? `✅ OK (${apiKey.length} chars)` : "❌ NÃO configurada",
+    FOOTBALLDATA_KEY: apiKey ? `✅ OK (${apiKey.length} chars)` : "❌ NÃO configurada — adicione no Vercel",
     ANTHROPIC_API_KEY: anthropicKey ? `✅ OK (${anthropicKey.length} chars)` : "❌ NÃO configurada",
     fixtures_hoje: fixturesInfo,
-    league_ids_encontrados: leagueIds,
+    competicoes: leagueIds,
     timestamp: new Date().toISOString(),
   });
 }
