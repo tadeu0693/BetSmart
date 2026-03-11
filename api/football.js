@@ -24,7 +24,7 @@ async function fdFetch(apiKey, path) {
   return d;
 }
 
-const FD_COMPS = ['PL','PD','SA','BL1','FL1','UCL','UEL','BSA','CLI','PPL','DED','ELC','BL2'];
+const FD_COMPS = ['PL','PD','SA','BL1','FL1','BSA','CLI','PPL','DED','ELC']; // UCL/UEL/BL2 bloqueadas no plano free
 
 function fdToFixture(m) {
   return {
@@ -53,7 +53,7 @@ async function fetchFDToday(apiKey, date) {
   // Se geral vazio, busca por competição em lotes (evita rate limit)
   if (matches.length === 0) {
     // Prioriza as ligas mais importantes primeiro
-    const priority = ['UCL','UEL','PL','PD','SA','BL1','FL1','BSA','CLI'];
+    const priority = ['BSA','CLI','PL','PD','SA','BL1','FL1','PPL','DED','ELC'];
     const others = FD_COMPS.filter(c => !priority.includes(c));
     const ordered = [...priority, ...others];
 
@@ -88,27 +88,16 @@ async function sdbFetch(path) {
 // TheSportsDB: usar nome exato da liga no parâmetro &l=
 // O endpoint eventsday aceita nome OU id numérico
 const SDB_LEAGUES = [
-  // IDs verificados no TheSportsDB
-  { id: '4328', name: 'English Premier League',    country: '🏴' },
-  { id: '4335', name: 'Spanish La Liga',           country: '🇪🇸' },
-  { id: '4332', name: 'Italian Serie A',           country: '🇮🇹' },
-  { id: '4331', name: 'German Bundesliga',         country: '🇩🇪' },
-  { id: '4334', name: 'French Ligue 1',            country: '🇫🇷' },
-  { id: '4480', name: 'UEFA Champions League',     country: '🏆' },
-  { id: '4481', name: 'UEFA Europa League',        country: '🏆' },
-  { id: '4337', name: 'Dutch Eredivisie',          country: '🇳🇱' },
-  { id: '4333', name: 'Portuguese Primeira Liga',  country: '🇵🇹' },
-  { id: '4336', name: 'English Championship',      country: '🏴' },
+  // TheSportsDB - usado para Champions/Europa que estão bloqueadas no football-data.org free
+  { id: '4480', name: 'UEFA Champions League',        country: '🏆' },
+  { id: '4481', name: 'UEFA Europa League',           country: '🏆' },
   { id: '4390', name: 'American Major League Soccer', country: '🇺🇸' },
-  { id: '4347', name: 'Mexican Primera Liga',      country: '🇲🇽' },
-  { id: '4354', name: 'Argentine Primera Division',country: '🇦🇷' },
-  { id: '4406', name: 'Turkish Super Lig',         country: '🇹🇷' },
-  { id: '4329', name: 'Scottish Premier League',   country: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
-  // Brasil - buscar pelo nome pois IDs variam
-  { id: '4356', name: 'Brazilian Serie A',         country: '🇧🇷' },
-  { id: '4358', name: 'Copa Do Brasil',            country: '🇧🇷' },
-  { id: '4346', name: 'Copa Libertadores',         country: '🌎' },
-  { id: '4344', name: 'Copa Sudamericana',         country: '🌎' },
+  { id: '4347', name: 'Mexican Primera Liga',         country: '🇲🇽' },
+  { id: '4354', name: 'Argentine Primera Division',   country: '🇦🇷' },
+  { id: '4406', name: 'Turkish Super Lig',            country: '🇹🇷' },
+  { id: '4329', name: 'Scottish Premier League',      country: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
+  { id: '4399', name: 'Australian A-League',          country: '🇦🇺' },
+  { id: '4368', name: 'Saudi Professional League',    country: '🇸🇦' },
 ];
 
 function sdbToFixture(e, leagueName, leagueId, leagueCountry) {
