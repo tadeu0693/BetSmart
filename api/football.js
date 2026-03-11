@@ -108,19 +108,34 @@ async function fetchSDBToday(date) {
   const cached = getCached('sdb_day_' + date);
   if (cached) return cached;
 
-  // TheSportsDB: busca eventos por data em todas as ligas em paralelo
+  let all = [];
+  const seen = new Set();
+
+  // Método 1: endpoint geral por data e esporte
+  try {
+    const d = await sdbFetch(`eventsday.php?d=${date}&s=Soccer`);
+    (d.events||[]).forEach(e => {
+      if (!seen.has(e.idEvent)) {
+        seen.add(e.idEvent);
+        const league = SDB_LEAGUES.find(l => l.name === e.strLeague) || { id: e.idLeague||'0', name: e.strLeague||'?', country: '🌍' };
+        all.push(sdbToFixture(e, league.name, league.id, league.country));
+      }
+    });
+  } catch(e) {}
+
+  // Método 2: busca por cada liga individualmente usando o ID da liga
   const results = await Promise.allSettled(
     SDB_LEAGUES.map(async (league) => {
-      const d = await sdbFetch(`eventsday.php?d=${date}&l=${encodeURIComponent(league.name)}`);
+      const d = await sdbFetch(`eventsday.php?d=${date}&l=${league.id}`);
       return { league, events: d.events || [] };
     })
   );
 
-  let all = [];
   results.forEach(r => {
-    if (r.status === 'fulfilled' && r.value.events.length > 0) {
-      r.value.events.forEach(e => {
-        if (e.strSport === 'Soccer') {
+    if (r.status === 'fulfilled') {
+      (r.value.events||[]).forEach(e => {
+        if (e.strSport === 'Soccer' && !seen.has(e.idEvent)) {
+          seen.add(e.idEvent);
           all.push(sdbToFixture(e, r.value.league.name, r.value.league.id, r.value.league.country));
         }
       });
