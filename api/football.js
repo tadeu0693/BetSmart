@@ -66,11 +66,7 @@ async function sdbFetch(path) {
 // TheSportsDB: usar nome exato da liga no parâmetro &l=
 // O endpoint eventsday aceita nome OU id numérico
 const SDB_LEAGUES = [
-  { id: '4351', name: 'Brazilian Serie A',        country: '🇧🇷' },
-  { id: '4424', name: 'Campeonato Paulista',       country: '🇧🇷' },
-  { id: '4346', name: 'Copa Libertadores',         country: '🌎' },
-  { id: '4344', name: 'Copa Sudamericana',         country: '🌎' },
-  { id: '4803', name: 'Copa do Brasil',            country: '🇧🇷' },
+  // IDs verificados no TheSportsDB
   { id: '4328', name: 'English Premier League',    country: '🏴' },
   { id: '4335', name: 'Spanish La Liga',           country: '🇪🇸' },
   { id: '4332', name: 'Italian Serie A',           country: '🇮🇹' },
@@ -86,7 +82,11 @@ const SDB_LEAGUES = [
   { id: '4354', name: 'Argentine Primera Division',country: '🇦🇷' },
   { id: '4406', name: 'Turkish Super Lig',         country: '🇹🇷' },
   { id: '4329', name: 'Scottish Premier League',   country: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
-  { id: '4480', name: 'UEFA Champions League',     country: '🏆' },
+  // Brasil - buscar pelo nome pois IDs variam
+  { id: '4356', name: 'Brazilian Serie A',         country: '🇧🇷' },
+  { id: '4358', name: 'Copa Do Brasil',            country: '🇧🇷' },
+  { id: '4346', name: 'Copa Libertadores',         country: '🌎' },
+  { id: '4344', name: 'Copa Sudamericana',         country: '🌎' },
 ];
 
 function sdbToFixture(e, leagueName, leagueId, leagueCountry) {
