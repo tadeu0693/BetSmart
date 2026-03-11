@@ -40,16 +40,38 @@ async function fetchFDToday(apiKey, date) {
   const cached = getCached('fd_day_' + date);
   if (cached) return cached;
   let matches = [];
+
+  // Tenta endpoint geral primeiro (mais eficiente)
   try {
     const d = await fdFetch(apiKey, `matches?dateFrom=${date}&dateTo=${date}`);
-    if (d.matches?.length > 0) matches = d.matches;
-  } catch(e) {}
+    if (d.matches?.length > 0) {
+      matches = d.matches;
+      console.log('FD geral:', matches.length, 'jogos');
+    }
+  } catch(e) { console.log('FD geral erro:', e.message); }
+
+  // Se geral vazio, busca por competição em lotes (evita rate limit)
   if (matches.length === 0) {
-    const results = await Promise.allSettled(
-      FD_COMPS.map(c => fdFetch(apiKey, `competitions/${c}/matches?dateFrom=${date}&dateTo=${date}`))
-    );
-    results.forEach(r => { if (r.status === 'fulfilled') matches.push(...(r.value.matches||[])); });
+    // Prioriza as ligas mais importantes primeiro
+    const priority = ['UCL','UEL','PL','PD','SA','BL1','FL1','BSA','CLI'];
+    const others = FD_COMPS.filter(c => !priority.includes(c));
+    const ordered = [...priority, ...others];
+
+    // Busca em lotes de 5 para não sobrecarregar
+    for (let i = 0; i < ordered.length; i += 5) {
+      const batch = ordered.slice(i, i + 5);
+      const results = await Promise.allSettled(
+        batch.map(comp => fdFetch(apiKey, `competitions/${comp}/matches?dateFrom=${date}&dateTo=${date}`))
+      );
+      results.forEach(r => {
+        if (r.status === 'fulfilled' && r.value.matches?.length > 0) {
+          matches.push(...r.value.matches);
+        }
+      });
+    }
+    console.log('FD por liga:', matches.length, 'jogos');
   }
+
   const fixtures = matches.map(fdToFixture);
   setCached('fd_day_' + date, fixtures, 30*MIN);
   return fixtures;
