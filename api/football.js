@@ -63,27 +63,30 @@ async function sdbFetch(path) {
 }
 
 // Ligas do TheSportsDB com IDs conhecidos
+// TheSportsDB: usar nome exato da liga no parâmetro &l=
+// O endpoint eventsday aceita nome OU id numérico
 const SDB_LEAGUES = [
-  { id: '4328', name: 'Premier League', country: '🏴' },
-  { id: '4335', name: 'La Liga', country: '🇪🇸' },
-  { id: '4332', name: 'Serie A', country: '🇮🇹' },
-  { id: '4331', name: 'Bundesliga', country: '🇩🇪' },
-  { id: '4334', name: 'Ligue 1', country: '🇫🇷' },
-  { id: '4480', name: 'UEFA Champions League', country: '🏆' },
-  { id: '4481', name: 'UEFA Europa League', country: '🏆' },
-  { id: '4351', name: 'Brasileirão Série A', country: '🇧🇷' },
-  { id: '4424', name: 'Paulistão', country: '🇧🇷' },
-  { id: '4803', name: 'Copa do Brasil', country: '🇧🇷' },
-  { id: '4346', name: 'Copa Libertadores', country: '🌎' },
-  { id: '4344', name: 'Copa Sudamericana', country: '🌎' },
-  { id: '4337', name: 'Eredivisie', country: '🇳🇱' },
-  { id: '4333', name: 'Primeira Liga', country: '🇵🇹' },
-  { id: '4336', name: 'Championship', country: '🏴' },
-  { id: '4329', name: 'Scottish Premiership', country: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
-  { id: '4390', name: 'MLS', country: '🇺🇸' },
-  { id: '4347', name: 'Liga MX', country: '🇲🇽' },
-  { id: '4354', name: 'Argentine Primera', country: '🇦🇷' },
-  { id: '4406', name: 'Süper Lig', country: '🇹🇷' },
+  { id: '4351', name: 'Brazilian Serie A',        country: '🇧🇷' },
+  { id: '4424', name: 'Campeonato Paulista',       country: '🇧🇷' },
+  { id: '4346', name: 'Copa Libertadores',         country: '🌎' },
+  { id: '4344', name: 'Copa Sudamericana',         country: '🌎' },
+  { id: '4803', name: 'Copa do Brasil',            country: '🇧🇷' },
+  { id: '4328', name: 'English Premier League',    country: '🏴' },
+  { id: '4335', name: 'Spanish La Liga',           country: '🇪🇸' },
+  { id: '4332', name: 'Italian Serie A',           country: '🇮🇹' },
+  { id: '4331', name: 'German Bundesliga',         country: '🇩🇪' },
+  { id: '4334', name: 'French Ligue 1',            country: '🇫🇷' },
+  { id: '4480', name: 'UEFA Champions League',     country: '🏆' },
+  { id: '4481', name: 'UEFA Europa League',        country: '🏆' },
+  { id: '4337', name: 'Dutch Eredivisie',          country: '🇳🇱' },
+  { id: '4333', name: 'Portuguese Primeira Liga',  country: '🇵🇹' },
+  { id: '4336', name: 'English Championship',      country: '🏴' },
+  { id: '4390', name: 'American Major League Soccer', country: '🇺🇸' },
+  { id: '4347', name: 'Mexican Primera Liga',      country: '🇲🇽' },
+  { id: '4354', name: 'Argentine Primera Division',country: '🇦🇷' },
+  { id: '4406', name: 'Turkish Super Lig',         country: '🇹🇷' },
+  { id: '4329', name: 'Scottish Premier League',   country: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
+  { id: '4480', name: 'UEFA Champions League',     country: '🏆' },
 ];
 
 function sdbToFixture(e, leagueName, leagueId, leagueCountry) {
@@ -123,11 +126,22 @@ async function fetchSDBToday(date) {
     });
   } catch(e) {}
 
-  // Método 2: busca por cada liga individualmente usando o ID da liga
+  // Método 2: busca por cada liga usando ID numérico (mais confiável)
   const results = await Promise.allSettled(
     SDB_LEAGUES.map(async (league) => {
-      const d = await sdbFetch(`eventsday.php?d=${date}&l=${league.id}`);
-      return { league, events: d.events || [] };
+      // Tenta com ID primeiro, depois com nome
+      let events = [];
+      try {
+        const d1 = await sdbFetch(`eventsday.php?d=${date}&l=${league.id}`);
+        events = d1.events || [];
+      } catch(e) {}
+      if (events.length === 0) {
+        try {
+          const d2 = await sdbFetch(`eventsday.php?d=${date}&l=${encodeURIComponent(league.name)}`);
+          events = d2.events || [];
+        } catch(e) {}
+      }
+      return { league, events };
     })
   );
 
